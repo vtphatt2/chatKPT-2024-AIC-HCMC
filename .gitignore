@@ -1,3 +1,6 @@
+# Export data is too large
+export/
+
 # Keep data structure
 data/
 
