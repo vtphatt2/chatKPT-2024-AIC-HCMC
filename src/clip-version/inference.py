@@ -5,23 +5,6 @@ import numpy as np
 import os
 import glob 
 
-
-# Phat 
-filter_L = ['L01', 'L02', 'L03']
-
-# # Thang Nguyen 
-# filter_L = ['L04', 'L05', 'L06']
-
-# # Mai Dang Khoa
-# filter_L = ['L07', 'L08', 'L09']
-
-# # Thang Nguyen
-# filter_L = ['L10', 'L11', 'L12']
-
-# 3. upload : https://drive.google.com/drive/folders/1bdVUUD8lsJv3_3aGBMBIzmfcqe9XaI3F?usp=share_link
-
-
-
 # run in about 3 minutes in the first time installed
 device = "cuda" if torch.cuda.is_available() else "cpu"
 model = CLIPModel.from_pretrained("openai/clip-vit-large-patch14-336").to(device)
@@ -40,11 +23,6 @@ for path in paths:
 
 for batch in batch_videos_dict.keys():
     batch_videos_dict[batch].sort()
-
-
-for batch in batch_videos_dict.keys():
-    batch_videos_dict[batch] = [video for video in batch_videos_dict[batch] if video[:3] in filter_L]
-
 
 for batch in batch_videos_dict.keys():
     for video in batch_videos_dict[batch]:
