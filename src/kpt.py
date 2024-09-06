@@ -1,0 +1,182 @@
+from PyQt6 import QtCore, QtGui, QtWidgets
+import os
+
+class Ui_MainWindow(object):
+    def setupUi(self, MainWindow):
+        MainWindow.setObjectName("MainWindow")
+        MainWindow.resize(1112, 665)
+        MainWindow.setStyleSheet("")
+        self.centralwidget = QtWidgets.QWidget(parent=MainWindow)
+        self.centralwidget.setObjectName("centralwidget")
+        
+        # Set up textInputWindow and its widgets
+        self.textInputWindow = QtWidgets.QGroupBox(parent=self.centralwidget)
+        self.textInputWindow.setGeometry(QtCore.QRect(20, 20, 281, 281))
+        font = QtGui.QFont()
+        font.setFamily("Consolas")
+        font.setPointSize(8)
+        self.textInputWindow.setFont(font)
+        self.textInputWindow.setObjectName("textInputWindow")
+        self.textInput = QtWidgets.QPlainTextEdit(parent=self.textInputWindow)
+        self.textInput.setGeometry(QtCore.QRect(10, 20, 256, 131))
+        font = QtGui.QFont()
+        font.setFamily("Consolas")
+        font.setPointSize(8)
+        self.textInput.setFont(font)
+        self.textInput.setObjectName("textInput")
+        self.peopleNumber = QtWidgets.QSpinBox(parent=self.textInputWindow)
+        self.peopleNumber.setGeometry(QtCore.QRect(70, 160, 42, 21))
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Maximum, QtWidgets.QSizePolicy.Policy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.peopleNumber.sizePolicy().hasHeightForWidth())
+        self.peopleNumber.setSizePolicy(sizePolicy)
+        self.peopleNumber.setObjectName("peopleNumber")
+        self.label = QtWidgets.QLabel(parent=self.textInputWindow)
+        self.label.setGeometry(QtCore.QRect(10, 159, 47, 14))
+        self.label.setObjectName("label")
+        self.label_2 = QtWidgets.QLabel(parent=self.textInputWindow)
+        self.label_2.setGeometry(QtCore.QRect(10, 200, 47, 14))
+        self.label_2.setObjectName("label_2")
+        self.maleNumber = QtWidgets.QSpinBox(parent=self.textInputWindow)
+        self.maleNumber.setGeometry(QtCore.QRect(70, 200, 42, 21))
+        self.maleNumber.setObjectName("maleNumber")
+        self.label_3 = QtWidgets.QLabel(parent=self.textInputWindow)
+        self.label_3.setGeometry(QtCore.QRect(10, 240, 47, 14))
+        self.label_3.setObjectName("label_3")
+        self.femaleNumber = QtWidgets.QSpinBox(parent=self.textInputWindow)
+        self.femaleNumber.setGeometry(QtCore.QRect(70, 240, 42, 21))
+        self.femaleNumber.setObjectName("femaleNumber")
+        self.clearText = QtWidgets.QPushButton(parent=self.textInputWindow)
+        self.clearText.setGeometry(QtCore.QRect(190, 160, 75, 41))
+        font = QtGui.QFont()
+        font.setStrikeOut(False)
+        self.clearText.setFont(font)
+        self.clearText.setObjectName("clearText")
+        self.clearNumber = QtWidgets.QPushButton(parent=self.textInputWindow)
+        self.clearNumber.setGeometry(QtCore.QRect(190, 210, 75, 41))
+        self.clearNumber.setObjectName("clearNumber")
+        
+        # Set up sketchInputWindow and its widgets
+        self.sketchInputWindow = QtWidgets.QGroupBox(parent=self.centralwidget)
+        self.sketchInputWindow.setGeometry(QtCore.QRect(20, 310, 281, 271))
+        font = QtGui.QFont()
+        font.setFamily("Consolas")
+        font.setPointSize(8)
+        self.sketchInputWindow.setFont(font)
+        self.sketchInputWindow.setObjectName("sketchInputWindow")
+        self.graphicsView = QtWidgets.QGraphicsView(parent=self.sketchInputWindow)
+        self.graphicsView.setGeometry(QtCore.QRect(10, 20, 256, 144))
+        font = QtGui.QFont()
+        font.setPointSize(8)
+        self.graphicsView.setFont(font)
+        self.graphicsView.setObjectName("graphicsView")
+        self.clearGraphic = QtWidgets.QPushButton(parent=self.sketchInputWindow)
+        self.clearGraphic.setGeometry(QtCore.QRect(190, 170, 75, 41))
+        font = QtGui.QFont()
+        font.setStrikeOut(False)
+        self.clearGraphic.setFont(font)
+        self.clearGraphic.setObjectName("clearGraphic")
+        self.loadGraphic = QtWidgets.QPushButton(parent=self.sketchInputWindow)
+        self.loadGraphic.setGeometry(QtCore.QRect(190, 220, 75, 41))
+        font = QtGui.QFont()
+        font.setStrikeOut(False)
+        self.loadGraphic.setFont(font)
+        self.loadGraphic.setObjectName("loadGraphic")
+        
+        # Set up search and clearAll buttons
+        self.search = QtWidgets.QPushButton(parent=self.centralwidget)
+        self.search.setGeometry(QtCore.QRect(170, 590, 121, 41))
+        font = QtGui.QFont()
+        font.setFamily("Consolas")
+        font.setPointSize(8)
+        self.search.setFont(font)
+        self.search.setObjectName("search")
+        self.clearAll = QtWidgets.QPushButton(parent=self.centralwidget)
+        self.clearAll.setGeometry(QtCore.QRect(30, 590, 121, 41))
+        font = QtGui.QFont()
+        font.setFamily("Consolas")
+        font.setPointSize(8)
+        self.clearAll.setFont(font)
+        self.clearAll.setObjectName("clearAll")
+        
+        # Set up scrollable grid layout
+        self.scrollArea = QtWidgets.QScrollArea(parent=self.centralwidget)
+        self.scrollArea.setGeometry(QtCore.QRect(310, 20, 791, 611))
+        self.scrollArea.setWidgetResizable(True)
+        self.scrollArea.setObjectName("scrollArea")
+
+        self.scrollAreaWidgetContents = QtWidgets.QWidget()
+        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 791, 611))
+        self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
+        self.gridLayout = QtWidgets.QGridLayout(self.scrollAreaWidgetContents)
+        self.gridLayout.setContentsMargins(0, 0, 0, 0)
+        self.gridLayout.setObjectName("gridLayout")
+
+        self.scrollArea.setWidget(self.scrollAreaWidgetContents)
+        
+        self.loadImages()
+
+        MainWindow.setCentralWidget(self.centralwidget)
+        self.statusbar = QtWidgets.QStatusBar(parent=MainWindow)
+        self.statusbar.setObjectName("statusbar")
+        MainWindow.setStatusBar(self.statusbar)
+
+        self.retranslateUi(MainWindow)
+        QtCore.QMetaObject.connectSlotsByName(MainWindow)
+
+    def retranslateUi(self, MainWindow):
+        _translate = QtCore.QCoreApplication.translate
+        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+        self.textInputWindow.setTitle(_translate("MainWindow", "Text Input"))
+        self.textInput.setPlainText(_translate("MainWindow", "Một con thuyền chạy được trên băng, màu đen. Con thuyền này chạy bằng động cơ cánh quạt ở bên trên thổi hướng ra phía sau. Con thuyền là phương tiện hỗ trợ cứu hộ một nạn nhân bị rơi xuống hồ băng."))
+        self.label.setText(_translate("MainWindow", "People"))
+        self.label_2.setText(_translate("MainWindow", "Male"))
+        self.label_3.setText(_translate("MainWindow", "Female"))
+        self.clearText.setText(_translate("MainWindow", "Clear text"))
+        self.clearNumber.setText(_translate("MainWindow", "Clear no."))
+        self.sketchInputWindow.setTitle(_translate("MainWindow", "Sketch Input"))
+        self.clearGraphic.setText(_translate("MainWindow", "Clear"))
+        self.loadGraphic.setText(_translate("MainWindow", "Load"))
+        self.search.setText(_translate("MainWindow", "Search"))
+        self.clearAll.setText(_translate("MainWindow", "Clear all"))
+
+    def loadImages(self):
+        # Path to the directory containing images
+        directory = "./keyframes/keyframes_L01/L01_V001"
+
+        # Iterate over files in the directory
+        for index, filename in enumerate(os.listdir(directory)):
+            if filename.lower().endswith('.jpg'):
+                # Create a QLabel for each image
+                image_path = os.path.join(directory, filename)
+                pixmap = QtGui.QPixmap(image_path)
+                image_label = QtWidgets.QLabel()
+                image_label.setPixmap(pixmap.scaled(150, 150, QtCore.Qt.AspectRatioMode.KeepAspectRatio))
+                image_label.setFixedSize(150, 150)
+                
+                # Create a QLabel for the image name
+                name_label = QtWidgets.QLabel(filename)
+                
+                # Create a QVBoxLayout to overlay the name on the image
+                overlay_layout = QtWidgets.QVBoxLayout()
+                overlay_layout.setContentsMargins(0, 0, 0, 0)
+                overlay_layout.addWidget(image_label)
+                overlay_layout.addWidget(name_label, alignment=QtCore.Qt.AlignmentFlag.AlignBottom | QtCore.Qt.AlignmentFlag.AlignRight)
+                
+                # Create a QWidget to hold the layout and add it to the grid layout
+                container = QtWidgets.QWidget()
+                container.setLayout(overlay_layout)
+                
+                row = index // 5
+                col = index % 5
+                self.gridLayout.addWidget(container, row, col)
+
+if __name__ == "__main__":
+    import sys
+    app = QtWidgets.QApplication(sys.argv)
+    MainWindow = QtWidgets.QMainWindow()
+    ui = Ui_MainWindow()
+    ui.setupUi(MainWindow)
+    MainWindow.show()
+    sys.exit(app.exec())
