@@ -25,9 +25,9 @@ def get_and_save_frame(video_path, frame_id, save_path, filename):
     cap.release()
 
 os.makedirs('keyframes', exist_ok=True)
-os.makedirs('video', exist_ok=True)
+os.makedirs('videos', exist_ok=True)
 os.makedirs('map-keyframes', exist_ok=True)
-model = TransNetV2()
+model = TransNetV2('/root/transnetv2-weights')
 
 links = pd.read_csv("link_down_video.csv")
 links = links[links['Type'] == 'Video']
@@ -42,26 +42,31 @@ for video, link in video_link_dict.items():
     
     command = [
         'aria2c', link, 
-        '--dir', 'video', 
+        '--dir', f'videos/', 
         '-s', '16',
         '-x', '16', 
     ]
     subprocess.run(command, check=True)
 
-    command = ['unzip', f'video/{video}.zip']
+    command = ['unzip', f'videos/{video}.zip', '-d', 'videos/']
     subprocess.run(command, check=True)
 
-    os.rename('video/video', 'video/{video}')
+    os.remove(f'videos/{video}.zip')
+    os.rename('videos/video', f'videos/{video}')
+    shutil.move(f'videos/{video}', 'video/')
+    os.rmdir('videos')
 
     L = video[-3:]
     os.makedirs(f'keyframes/keyframes_{L}', exist_ok=True)
 
-    videos = glob(os.getcwd() + '/' + 'video/{video}/*.mp4')
+    videos = glob(os.getcwd() + '/' + f'video/{video}/*.mp4')
     videos.sort()
+    print(videos)
+    
     for sub_video in videos:
         video_name = sub_video[:-4].rsplit('/', 1)[-1]
         with open(f'map-keyframes/{video_name}.csv', 'a') as file:
-            file.write('n,pts_time,fps,frame_idx')
+            file.write('n,pts_time,fps,frame_idx\n')
         video_frames, single_frame_predictions, all_frame_predictions = \
             model.predict_video(sub_video)
         frame_interval = model.predictions_to_scenes(single_frame_predictions)
@@ -70,5 +75,7 @@ for video, link in video_link_dict.items():
             frame_id_extracted = int((row[0] + row[1])/2)
             get_and_save_frame(sub_video, frame_id_extracted, f'keyframes/keyframes_{L}/{video_name}', f'{(i+1):03d}.jpg')
             with open(f'map-keyframes/{video_name}.csv', 'a') as file:
-                file.write(f'{i+1},{round(frame_id_extracted / 25.0, 2)},25.0,{frame_id_extracted}')
+                file.write(f'{i+1},{round(frame_id_extracted / 25.0, 2)},25.0,{frame_id_extracted}\n')
         print(f"Finish {video_name}")
+
+    shutil.make_archive(f'keyframes/keyframes_{L}', 'zip', f'keyframes/keyframes_{L}')
