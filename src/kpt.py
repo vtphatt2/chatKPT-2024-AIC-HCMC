@@ -1,8 +1,16 @@
 from PyQt6 import QtCore, QtGui, QtWidgets
+from glob import glob
 import os
 
+
 class Ui_MainWindow(object):
-    def setupUi(self, MainWindow):
+    def save_text_query(self):
+        text = self.textInput.toPlainText()
+        save_path = r"D:\AIC 2024\chatKPT-2024-AIC-HCMC\query\pack-pretest\query.txt"
+        with open(save_path, "w") as f:
+            f.write(text)
+
+    def setupUi(self, MainWindow, path):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(1112, 665)
         MainWindow.setStyleSheet("")
@@ -17,6 +25,8 @@ class Ui_MainWindow(object):
         font.setPointSize(8)
         self.textInputWindow.setFont(font)
         self.textInputWindow.setObjectName("textInputWindow")
+
+        # Set up textInput and its widgets
         self.textInput = QtWidgets.QPlainTextEdit(parent=self.textInputWindow)
         self.textInput.setGeometry(QtCore.QRect(10, 20, 256, 131))
         font = QtGui.QFont()
@@ -24,6 +34,8 @@ class Ui_MainWindow(object):
         font.setPointSize(8)
         self.textInput.setFont(font)
         self.textInput.setObjectName("textInput")
+
+        # Set up peopleNumber
         self.peopleNumber = QtWidgets.QSpinBox(parent=self.textInputWindow)
         self.peopleNumber.setGeometry(QtCore.QRect(70, 160, 42, 21))
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Maximum, QtWidgets.QSizePolicy.Policy.Fixed)
@@ -32,27 +44,41 @@ class Ui_MainWindow(object):
         sizePolicy.setHeightForWidth(self.peopleNumber.sizePolicy().hasHeightForWidth())
         self.peopleNumber.setSizePolicy(sizePolicy)
         self.peopleNumber.setObjectName("peopleNumber")
+
+        # Set up labels
         self.label = QtWidgets.QLabel(parent=self.textInputWindow)
         self.label.setGeometry(QtCore.QRect(10, 159, 47, 14))
         self.label.setObjectName("label")
+
+        # Set up labels and spin
         self.label_2 = QtWidgets.QLabel(parent=self.textInputWindow)
         self.label_2.setGeometry(QtCore.QRect(10, 200, 47, 14))
         self.label_2.setObjectName("label_2")
+
+        # Set up maleNumber
         self.maleNumber = QtWidgets.QSpinBox(parent=self.textInputWindow)
         self.maleNumber.setGeometry(QtCore.QRect(70, 200, 42, 21))
         self.maleNumber.setObjectName("maleNumber")
+
+        # Set up label 3
         self.label_3 = QtWidgets.QLabel(parent=self.textInputWindow)
         self.label_3.setGeometry(QtCore.QRect(10, 240, 47, 14))
         self.label_3.setObjectName("label_3")
+
+        # Set up femaleNumber
         self.femaleNumber = QtWidgets.QSpinBox(parent=self.textInputWindow)
         self.femaleNumber.setGeometry(QtCore.QRect(70, 240, 42, 21))
         self.femaleNumber.setObjectName("femaleNumber")
+
+        # Set up clearText and clearNumber buttons
         self.clearText = QtWidgets.QPushButton(parent=self.textInputWindow)
         self.clearText.setGeometry(QtCore.QRect(190, 160, 75, 41))
         font = QtGui.QFont()
         font.setStrikeOut(False)
         self.clearText.setFont(font)
         self.clearText.setObjectName("clearText")
+
+        # Set up clearNumber button
         self.clearNumber = QtWidgets.QPushButton(parent=self.textInputWindow)
         self.clearNumber.setGeometry(QtCore.QRect(190, 210, 75, 41))
         self.clearNumber.setObjectName("clearNumber")
@@ -92,6 +118,8 @@ class Ui_MainWindow(object):
         font.setPointSize(8)
         self.search.setFont(font)
         self.search.setObjectName("search")
+        self.search.clicked.connect(lambda: self.save_text_query()) # Connect the button to the save_text function
+
         self.clearAll = QtWidgets.QPushButton(parent=self.centralwidget)
         self.clearAll.setGeometry(QtCore.QRect(30, 590, 121, 41))
         font = QtGui.QFont()
@@ -115,7 +143,7 @@ class Ui_MainWindow(object):
 
         self.scrollArea.setWidget(self.scrollAreaWidgetContents)
         
-        self.loadImages()
+        self.loadImages(path)
 
         MainWindow.setCentralWidget(self.centralwidget)
         self.statusbar = QtWidgets.QStatusBar(parent=MainWindow)
@@ -129,7 +157,7 @@ class Ui_MainWindow(object):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
         self.textInputWindow.setTitle(_translate("MainWindow", "Text Input"))
-        self.textInput.setPlainText(_translate("MainWindow", "Một con thuyền chạy được trên băng, màu đen. Con thuyền này chạy bằng động cơ cánh quạt ở bên trên thổi hướng ra phía sau. Con thuyền là phương tiện hỗ trợ cứu hộ một nạn nhân bị rơi xuống hồ băng."))
+        self.textInput.setPlainText(_translate("MainWindow", ""))
         self.label.setText(_translate("MainWindow", "People"))
         self.label_2.setText(_translate("MainWindow", "Male"))
         self.label_3.setText(_translate("MainWindow", "Female"))
@@ -141,9 +169,17 @@ class Ui_MainWindow(object):
         self.search.setText(_translate("MainWindow", "Search"))
         self.clearAll.setText(_translate("MainWindow", "Clear all"))
 
-    def loadImages(self):
+    def loadImages(self, path = None):
         # Path to the directory containing images
-        directory = "./keyframes/keyframes_L01/L01_V001"
+        if path is None:
+            directory = ".\\.\\data\\batch1\\keyframes\\keyframes_L01\\L01_V001"
+        else:
+            directory = path
+
+        # Check if any images were found
+        if not directory:
+            QtWidgets.QMessageBox.critical(None, "Error", "No images found in the specified directory.")
+            return
 
         # Iterate over files in the directory
         for index, filename in enumerate(os.listdir(directory)):
@@ -172,11 +208,17 @@ class Ui_MainWindow(object):
                 col = index % 5
                 self.gridLayout.addWidget(container, row, col)
 
-if __name__ == "__main__":
+def run_app(path = None):
     import sys
     app = QtWidgets.QApplication(sys.argv)
     MainWindow = QtWidgets.QMainWindow()
     ui = Ui_MainWindow()
-    ui.setupUi(MainWindow)
+    ui.setupUi(MainWindow, path)
     MainWindow.show()
-    sys.exit(app.exec())
+    try:
+        app.exec()
+    except SystemExit:
+        pass
+
+if __name__ == "__main__":
+    run_app()
