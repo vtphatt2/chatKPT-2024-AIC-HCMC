@@ -1,0 +1,1 @@
+Cảnh quay một tình huống diễn tập ứng phó với sự cố phóng xạ. Cảnh đầu tiên có một người mặc đồ vàng và xanh dương nằm dưới đất có đeo khẩu trang, tiếp theo là cảnh một đội cứu hỏa đang dùng bình chữa cháy để xịt khói. Kết thúc bằng cảnh 2 người mặc áo bảo hộ màu xanh đang khiêng một nạn nhân nằm trên cáng. Hỏi có bao nhiêu người dùng bình cứu hỏa trong phân đoạn trên?
