@@ -4,11 +4,20 @@ import os
 
 
 class Ui_MainWindow(object):
+
+    def __init__(self):
+        self.back_ground_task = BackgroundTask()
+        self.back_ground_task.newQuery.connect(self.loadImages)
+        self.back_ground_task.start()
+
     def save_text_query(self):
         text = self.textInput.toPlainText()
         save_path = r"D:\AIC 2024\chatKPT-2024-AIC-HCMC\query\pack-pretest\query.txt"
         with open(save_path, "w") as f:
             f.write(text)
+
+    def addImage(self, path):
+        self.loadImages(path)
 
     def setupUi(self, MainWindow, path):
         MainWindow.setObjectName("MainWindow")
@@ -170,28 +179,25 @@ class Ui_MainWindow(object):
         self.clearAll.setText(_translate("MainWindow", "Clear all"))
 
     def loadImages(self, path = None):
-        # Path to the directory containing images
-        if path is None:
-            directory = ".\\.\\data\\batch1\\keyframes\\keyframes_L01\\L01_V001"
-        else:
-            directory = path
-
-        # Check if any images were found
-        if not directory:
-            QtWidgets.QMessageBox.critical(None, "Error", "No images found in the specified directory.")
-            return
+        
+        self.clearLayout(self.gridLayout)   
+        try:
+            with open(path, "r") as file:
+                image_paths = [line.strip() for line in file.readlines()]
+        except FileNotFoundError:
+            pass
 
         # Iterate over files in the directory
-        for index, filename in enumerate(os.listdir(directory)):
-            if filename.lower().endswith('.jpg'):
+        for index, image_path in enumerate(image_paths):
+            if image_path.lower().endswith('.jpg'):
                 # Create a QLabel for each image
-                image_path = os.path.join(directory, filename)
                 pixmap = QtGui.QPixmap(image_path)
                 image_label = QtWidgets.QLabel()
                 image_label.setPixmap(pixmap.scaled(150, 150, QtCore.Qt.AspectRatioMode.KeepAspectRatio))
                 image_label.setFixedSize(150, 150)
                 
                 # Create a QLabel for the image name
+                filename = os.path.basename(image_path)
                 name_label = QtWidgets.QLabel(filename)
                 
                 # Create a QVBoxLayout to overlay the name on the image
@@ -208,6 +214,35 @@ class Ui_MainWindow(object):
                 col = index % 5
                 self.gridLayout.addWidget(container, row, col)
 
+    def clearLayout(self, layout):
+        if layout is not None:
+            while layout.count():
+                item = layout.takeAt(0)
+                widget = item.widget()
+                if widget is not None:
+                    widget.deleteLater()
+                else:
+                    self.clearLayout(item.layout())
+
+class BackgroundTask(QtCore.QThread):
+    newQuery = QtCore.pyqtSignal(str) # Signal to send new query to the model
+
+    def run(self):
+        base_dir = r"D:\AIC 2024\chatKPT-2024-AIC-HCMC\data\batch1\keyframes"
+        with open("D:\AIC 2024\chatKPT-2024-AIC-HCMC\submission\output_keyframes.csv", "r") as f:
+            lines = f.readlines()
+            for line in lines:
+                video, keyframes_id = line.strip().split(",")
+                video_dir = f"keyframes_{video.split('_')[0]}"
+                image_path = os.path.join(base_dir, video_dir, video, f"{video}_{keyframes_id}.jpg")
+                
+                # Store image_path to image_path.txt
+                save_path = r"D:\AIC 2024\chatKPT-2024-AIC-HCMC\submission\image_path.txt"
+                with open(save_path, "a") as file:
+                    file.write(image_path + "\n")
+                
+            self.newQuery.emit(save_path)
+
 def run_app(path = None):
     import sys
     app = QtWidgets.QApplication(sys.argv)
@@ -215,8 +250,12 @@ def run_app(path = None):
     ui = Ui_MainWindow()
     ui.setupUi(MainWindow, path)
     MainWindow.show()
+
+    background_task = BackgroundTask()
+    background_task.start()
+
     try:
-        app.exec()
+        app.exec()            
     except SystemExit:
         pass
 
