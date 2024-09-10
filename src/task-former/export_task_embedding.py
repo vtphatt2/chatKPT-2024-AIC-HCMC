@@ -19,8 +19,6 @@ model_file = MODEL_PATH / 'tsbir_model_final.pt'
 from clip.model import convert_weights, CLIP
 from clip.clip import _transform, load, tokenize
 
-# The rest of your imports and code...
-
 if torch.cuda.is_available():
     device = "cuda"  # Use GPU with CUDA
 elif torch.backends.mps.is_available():
@@ -73,6 +71,9 @@ def main():
     global model
 
     for video_name in sorted_key:
+        if (os.path.exists(SAVE_PATH / f'{video_name}.npy')):
+            continue
+
         print(f'Inference on... {video_name}')
 
         dataset = SimpleImageFolder(video_img_dict[video_name], transform=preprocess_val)
