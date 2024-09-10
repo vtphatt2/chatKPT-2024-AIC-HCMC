@@ -1,7 +1,14 @@
-from PyQt6 import QtCore, QtGui, QtWidgets
+import sys
 import os
+import csv
+import torch
+from PyQt6 import QtCore, QtGui, QtWidgets
+from PyQt6.QtWidgets import QFileDialog
+from sklearn.metrics.pairwise import cosine_similarity
+import fiftyone as fo
 
-class Ui_MainWindow(object):
+
+class Ui_MainWindow(object):    
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(1112, 665)
@@ -98,7 +105,15 @@ class Ui_MainWindow(object):
         # Connect buttons to event handlers
         self.clearText.clicked.connect(self.clear_text_content)
         self.clearNumber.clicked.connect(self.clear_spinbox_values)
-        
+        self.clearGraphic.clicked.connect(self.clear_graphic_content)
+        self.clearAll.clicked.connect(self.clear_all_content)
+        self.loadGraphic.clicked.connect(self.load_graphic_image)
+        self.search.clicked.connect(self.handle_search)
+
+        # Set up scene for graphicsView
+        self.scene = QtWidgets.QGraphicsScene()
+        self.graphicsView.setScene(self.scene)
+
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
@@ -117,7 +132,7 @@ class Ui_MainWindow(object):
         self.clearAll.setText(_translate("MainWindow", "Clear all"))
 
     def loadImages(self):
-        directory = "../../data/batch1/keyframes/keyframes_L01/L01_V001"
+        directory = r"C:\Users\LENOVO\Desktop\chatKPT-2024-AIC-HCMC\data\batch1\keyframes\keyframes_L01\L01_V001"
         for index, filename in enumerate(os.listdir(directory)):
             if filename.lower().endswith('.jpg'):
                 image_path = os.path.join(directory, filename)
@@ -140,15 +155,47 @@ class Ui_MainWindow(object):
                 col = index % 5
                 self.gridLayout.addWidget(container, row, col)
     
-    # Event handler for Clear text button
     def clear_text_content(self):
         self.textInput.clear()
 
-    # Event handler for Clear no. button
     def clear_spinbox_values(self):
         self.peopleNumber.setValue(0)
         self.maleNumber.setValue(0)
         self.femaleNumber.setValue(0)
+
+    def clear_graphic_content(self):
+        self.scene.clear()
+
+    def clear_all_content(self):
+        self.clear_text_content()
+        self.clear_spinbox_values()
+        self.clear_graphic_content()
+
+    def load_graphic_image(self):
+        file_path, _ = QFileDialog.getOpenFileName(None, "Open Image File", "", 
+                                                "Images (*.png *.xpm *.jpg);;All Files (*)")
+        
+        if file_path:
+            pixmap = QtGui.QPixmap(file_path)
+            
+            if not pixmap.isNull():
+                self.scene.clear()
+                scaled_pixmap = pixmap.scaled(self.graphicsView.size(), QtCore.Qt.AspectRatioMode.KeepAspectRatio)
+                
+                self.scene.addPixmap(scaled_pixmap)
+                self.graphicsView.setScene(self.scene)
+                self.graphicsView.fitInView(self.scene.itemsBoundingRect(), QtCore.Qt.AspectRatioMode.KeepAspectRatio)
+            else:
+                print("Error loading the image!")
+
+
+    def handle_search(self):
+        text_query = self.textInput.toPlainText()
+        csv_file = "output.csv"
+
+        from submission import submission
+
+        dataset_submission = submission(text_query, 100, csv_file)
 
 if __name__ == "__main__":
     import sys
@@ -158,3 +205,4 @@ if __name__ == "__main__":
     ui.setupUi(MainWindow)
     MainWindow.show()
     sys.exit(app.exec())
+
