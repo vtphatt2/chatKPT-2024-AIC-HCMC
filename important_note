@@ -1,0 +1,5 @@
+Remember to delete _MACOSX and .DS_Store in submission.zip
+
+zip -d submission.zip __MACOSX/\*
+
+zip -d submission.zip \*/.DS_Store
