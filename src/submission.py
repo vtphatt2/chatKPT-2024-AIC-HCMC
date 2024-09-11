@@ -1,0 +1,214 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+# In[15]:
+
+
+import fiftyone as fo
+import os
+import pandas as pd
+import numpy as np
+from glob import glob
+import torch
+from transformers import CLIPProcessor, CLIPModel
+from PIL import Image
+from sklearn.metrics.pairwise import cosine_similarity
+import csv
+
+
+# In[16]:
+
+
+# run in about 15 seconds
+if fo.dataset_exists("AIC_2024"):
+    fo.delete_dataset("AIC_2024")
+    
+dataset = fo.Dataset.from_images_dir(
+    name="AIC_2024", 
+    images_dir=os.path.join("..", "data", "batch1", "keyframes"), 
+    recursive=True
+)
+
+
+# In[17]:
+
+
+# run in about 36 seconds
+unique_videos = set()
+for sample in dataset:
+    tmp, sample['video'], sample['keyframe_id'] = sample['filepath'][:-4].rsplit(os.sep, 2)
+    sample['batch'] = tmp.rsplit(os.sep, 4)[-3]
+    unique_videos.add(sample['video'])
+    sample.save()
+
+
+# In[18]:
+
+
+# run in nearly 40 seconds
+video_frameid_dict = {}
+for b in [1, 2, 3]:
+    for video in unique_videos:
+        filepath = os.path.join('..', 'data', f'batch{b}', 'map-keyframes', f'{video}.csv')
+        if os.path.exists(filepath):
+            a = pd.read_csv(filepath)
+            video_frameid_dict[video] = a['frame_idx']
+
+for sample in dataset:
+    print(sample['video'] + '-' + sample['keyframe_id'])
+    sample['frame_id'] = video_frameid_dict[sample['video']].iloc[int(sample['keyframe_id']) - 1]
+    sample.save()
+
+
+# In[19]:
+
+
+# run in about 1 minutes
+video_keyframe_dict = {}
+all_keyframe_paths = glob(os.path.join(os.getcwd(), '..', 'data', 'batch*', 'keyframes',
+                            '*', '*', '*.jpg'))
+
+for kf in all_keyframe_paths:
+    _, vid, kf = kf[:-4].rsplit(os.sep, 2)
+    if vid not in video_keyframe_dict.keys():
+        video_keyframe_dict[vid] = [kf]
+    else:
+        video_keyframe_dict[vid].append(kf)
+
+for k, v in video_keyframe_dict.items():
+    video_keyframe_dict[k] = sorted(v)
+
+embedding_dict = {}
+for j in [1, 2, 3]:
+    for video in unique_videos:
+        clip_14_path = os.path.join('..', 'data', f'batch{j}', 
+                            'clip-features-14', f'{video}.npy')
+        if os.path.exists(clip_14_path):
+            a = np.load(clip_14_path)
+            embedding_dict[video] = {}
+            for i, k in enumerate(video_keyframe_dict[video]):
+                embedding_dict[video][k] = a[i]
+
+for sample in dataset:
+    sample['clip-14'] = embedding_dict[sample['video']][sample['keyframe_id']]
+    sample.save()
+
+
+# In[7]:
+
+
+dataset.first()
+
+
+# In[20]:
+
+
+# run in 10 minutes
+device = "cuda" if torch.cuda.is_available() else "cpu"
+model = CLIPModel.from_pretrained("openai/clip-vit-large-patch14-336").to(device)
+processor = CLIPProcessor.from_pretrained("openai/clip-vit-large-patch14-336")
+
+
+# In[21]:
+
+
+# run in 11 seconds
+image_samples = []
+image_embeddings = []
+for sample in dataset:
+    image_samples.append(sample)
+    image_embeddings.append(sample['clip-14']) 
+image_embeddings = np.array(image_embeddings)
+
+
+# In[8]:
+
+
+def submission(text_query, k, csv_file):
+    inputs = processor(text=[text_query], return_tensors="pt", padding=True, truncation=True).to(device)
+    with torch.no_grad():
+        text_features = model.get_text_features(**inputs).cpu().numpy().flatten()
+    similarities = cosine_similarity([text_features], image_embeddings)[0]
+    top_k_indices = similarities.argsort()[-k:][::-1]
+
+    if fo.dataset_exists("submission"):
+        fo.delete_dataset("submission")
+
+    dataset_submission = fo.Dataset(
+        name="submission"
+    )
+
+    for index in top_k_indices:
+        dataset_submission.add_sample(image_samples[index])
+
+    with open(csv_file, mode='w', newline='') as file:
+        writer = csv.DictWriter(file, fieldnames=['video', 'frame_id'])
+        # writer.writeheader()
+        for sample in dataset_submission:
+            writer.writerow({'video': sample['video'], 'frame_id': sample['frame_id']})
+
+    return dataset_submission
+
+
+# In[25]:
+
+
+import os
+import pandas as pd
+
+def calculate_keyframe_id(path):
+
+    # Đọc file CSV
+    df = pd.read_csv(path, header=None, names=['video', 'frame_id'])
+
+    # Lưu đường dẫn keyframes
+    keyframe_paths = []
+
+    for index, row in df.iterrows():
+        video = row['video']
+        frame_id = row['frame_id']
+        
+        # Kiểm tra video có tồn tại trong dictionary và frame_id có tồn tại không
+        if video in video_frameid_dict and (video_frameid_dict[video] == frame_id).any():
+            # Lấy chỉ số keyframe
+            key_frame = video_frameid_dict[video][video_frameid_dict[video] == frame_id].index[0] + 1
+
+            # Tạo đường dẫn keyframe
+            keyframe_path = os.path.join(
+                r"D:\AIC 2024\chatKPT-2024-AIC-HCMC\data\batch1\keyframes",
+                f"keyframes_{video.split('_')[0]}",
+                video,
+                f"{key_frame:03d}.jpg"
+            )
+            keyframe_paths.append(keyframe_path)
+        else:
+            print(f'Video {video} and frame_id {frame_id} not found in the dataset')
+
+    # Lưu đường dẫn keyframes vào file
+    with open("image_result_path.txt", "w") as file:
+        for path in keyframe_paths:
+            file.write(path + "\n")
+
+    return keyframe_paths
+
+
+# In[26]:
+
+
+path_to_csv = r"D:\AIC 2024\chatKPT-2024-AIC-HCMC\src\output.csv"
+keyframe_paths = calculate_keyframe_id(path_to_csv)
+for path in keyframe_paths:
+    print(path)
+
+
+# In[11]:
+
+
+# text_query = "A boat that can run on ice, black in color. This boat is powered by a propeller engine on top that blows out the back. The boat was a rescue vehicle for a victim who fell into an icy lake."
+# output_file = "output.csv"
+
+# output_file = os.path.join('..', 'submission', output_file)
+# dataset_submission = submission(text_query, 100, output_file)
+# session = fo.launch_app(dataset_submission, auto=False)
+# session.open_tab()
+
