@@ -41,7 +41,7 @@ for b in [1, 2, 3]:
             video_frameid_dict[video] = a['frame_idx']
 
 for sample in dataset:
-    print(sample['video'] + '-' + sample['keyframe_id'])
+    # print(sample['video'] + '-' + sample['keyframe_id'])
     sample['frame_id'] = video_frameid_dict[sample['video']].iloc[int(sample['keyframe_id']) - 1]
     sample.save()
 
