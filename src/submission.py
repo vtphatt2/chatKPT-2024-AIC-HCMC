@@ -41,7 +41,7 @@ for b in [1, 2, 3]:
             video_frameid_dict[video] = a['frame_idx']
 
 for sample in dataset:
-    # print(sample['video'] + '-' + sample['keyframe_id'])
+    print(sample['video'] + '-' + sample['keyframe_id'])
     sample['frame_id'] = video_frameid_dict[sample['video']].iloc[int(sample['keyframe_id']) - 1]
     sample.save()
 
@@ -75,6 +75,9 @@ for j in [1, 2, 3]:
 for sample in dataset:
     sample['clip-14'] = embedding_dict[sample['video']][sample['keyframe_id']]
     sample.save()
+
+# %%
+dataset.first()
 
 # %%
 # run in 10 minutes
@@ -117,13 +120,32 @@ def submission(text_query, k, csv_file):
 
     return dataset_submission
 
-# # %%
-# text_query = "A scene from a radiation emergency response exercise. The first shot shows a person in yellow and blue clothes lying on the ground wearing a mask, followed by a fire brigade using a fire extinguisher to spray smoke. It ends with two people in blue protective suits carrying a victim on a stretcher. How many people use the fire extinguisher in the scene?"
-# output_file = "output.csv"
+# %%
 
-# output_file = os.path.join('..', 'submission', output_file)
-# dataset_submission = submission(text_query, 100, output_file)
-# session = fo.launch_app(dataset_submission, auto=False)
-# session.open_tab()
+def calculate_keyframe_id(path):
+    df = pd.read_csv(path, header=None, names=['video', 'frame_id'])
 
+    keyframe_paths = []
 
+    for index, row in df.iterrows():
+        video = row['video']
+        frame_id = row['frame_id']
+        
+        if video in video_frameid_dict and (video_frameid_dict[video] == frame_id).any():
+            key_frame = video_frameid_dict[video][video_frameid_dict[video] == frame_id].index[0] + 1
+
+            keyframe_path = os.path.join(
+                "../data/batch1/keyframes",
+                f"keyframes_{video.split('_')[0]}",
+                video,
+                f"{key_frame:03d}.jpg"
+            )
+            keyframe_paths.append(keyframe_path)
+        else:
+            print(f'Video {video} and frame_id {frame_id} not found in the dataset')
+
+    with open("image_result_path.txt", "w") as file:
+        for path in keyframe_paths:
+            file.write(path + "\n")
+
+    return keyframe_paths

@@ -7,7 +7,6 @@ from PyQt6.QtWidgets import QFileDialog
 from sklearn.metrics.pairwise import cosine_similarity
 import fiftyone as fo
 
-
 class Ui_MainWindow(object):    
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
@@ -132,7 +131,7 @@ class Ui_MainWindow(object):
         self.clearAll.setText(_translate("MainWindow", "Clear all"))
 
     def loadImages(self):
-        directory = r"C:\Users\LENOVO\Desktop\chatKPT-2024-AIC-HCMC\data\batch1\keyframes\keyframes_L01\L01_V001"
+        directory = "../data/batch1/keyframes/keyframes_L01/L01_V001"
         for index, filename in enumerate(os.listdir(directory)):
             if filename.lower().endswith('.jpg'):
                 image_path = os.path.join(directory, filename)
@@ -188,21 +187,70 @@ class Ui_MainWindow(object):
             else:
                 print("Error loading the image!")
 
-
+    def get_video_frame_id(self, path):
+        with open(path, 'r') as file:
+            lines = file.reader()
+            for line in lines:
+                video, frame_id = line.split(',')
+                return video, frame_id
+            
+    def clear_layout(self, layout):
+        if layout is not None:
+            while layout.count():
+                child = layout.takeAt(0)
+                if child.widget() is not None:
+                    child.widget().deleteLater()
+                elif child.layout() is not None:
+                    self.clear_layout(child.layout())
+            
     def handle_search(self):
         text_query = self.textInput.toPlainText()
         csv_file = "output.csv"
-
         from submission import submission
-
         dataset_submission = submission(text_query, 100, csv_file)
+        
+        from submission import calculate_keyframe_id
+        
+        path_to_csv = "output.csv" 
+        keyframe_paths = calculate_keyframe_id(path_to_csv)
 
-if __name__ == "__main__":
+        # Clear the existing layout
+        self.clear_layout(self.gridLayout)
+
+        # load images from image_result_path.txt and put to loadImages
+        with open("image_result_path.txt", "r") as file:
+            for line in file:
+                image_path = line.strip()
+                pixmap = QtGui.QPixmap(image_path)
+                image_label = QtWidgets.QLabel()
+                image_label.setPixmap(pixmap.scaled(150, 150, QtCore.Qt.AspectRatioMode.KeepAspectRatio))
+                image_label.setFixedSize(150, 150)
+                
+                name_label = QtWidgets.QLabel(os.path.basename(image_path))
+                
+                overlay_layout = QtWidgets.QVBoxLayout()
+                overlay_layout.setContentsMargins(0, 0, 0, 0)
+                overlay_layout.addWidget(image_label)
+                overlay_layout.addWidget(name_label, alignment=QtCore.Qt.AlignmentFlag.AlignBottom | QtCore.Qt.AlignmentFlag.AlignRight)
+                
+                container = QtWidgets.QWidget()
+                container.setLayout(overlay_layout)
+                
+                self.gridLayout.addWidget(container)
+        
+
+def run_app(path = None):
     import sys
     app = QtWidgets.QApplication(sys.argv)
     MainWindow = QtWidgets.QMainWindow()
     ui = Ui_MainWindow()
     ui.setupUi(MainWindow)
     MainWindow.show()
-    sys.exit(app.exec())
 
+    try:
+        app.exec()            
+    except SystemExit:
+        pass
+
+if __name__ == "__main__":
+    run_app()
