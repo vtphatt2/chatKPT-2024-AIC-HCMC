@@ -7,6 +7,21 @@ from PyQt6.QtWidgets import QFileDialog
 from sklearn.metrics.pairwise import cosine_similarity
 import fiftyone as fo
 
+class ImageWindow(QtWidgets.QWidget):
+    def __init__(self, image_path):
+        super().__init__()
+        self.setWindowTitle("Image Viewer")
+        self.setGeometry(100, 100, 900, 700)
+        
+        layout = QtWidgets.QVBoxLayout()
+        
+        pixmap = QtGui.QPixmap(image_path)
+        image_label = QtWidgets.QLabel()
+        image_label.setPixmap(pixmap.scaled(900, 700, QtCore.Qt.AspectRatioMode.KeepAspectRatio))
+        layout.addWidget(image_label)
+        
+        self.setLayout(layout)
+
 class Ui_MainWindow(object):    
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
@@ -136,9 +151,13 @@ class Ui_MainWindow(object):
             if filename.lower().endswith('.jpg'):
                 image_path = os.path.join(directory, filename)
                 pixmap = QtGui.QPixmap(image_path)
+                
                 image_label = QtWidgets.QLabel()
                 image_label.setPixmap(pixmap.scaled(150, 150, QtCore.Qt.AspectRatioMode.KeepAspectRatio))
                 image_label.setFixedSize(150, 150)
+                
+                # Add click event to open image in new window
+                image_label.mousePressEvent = lambda event, img_path=image_path: self.show_image_in_window(img_path)
                 
                 name_label = QtWidgets.QLabel(filename)
                 
@@ -153,6 +172,10 @@ class Ui_MainWindow(object):
                 row = index // 5
                 col = index % 5
                 self.gridLayout.addWidget(container, row, col)
+                
+    def show_image_in_window(self, image_path):
+        self.image_window = ImageWindow(image_path)
+        self.image_window.show()
     
     def clear_text_content(self):
         self.textInput.clear()
