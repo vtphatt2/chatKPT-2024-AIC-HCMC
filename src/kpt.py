@@ -14,15 +14,11 @@ class ImageWindow(QtWidgets.QWidget):
         self.setWindowTitle("Image Viewer")
         self.setGeometry(100, 100, 1112, 665)
         
-        # Create a splitter to divide the main image and keyframes
         splitter = QtWidgets.QSplitter(QtCore.Qt.Orientation.Horizontal)
-        
-        # Left side layout (selectedImageWindow and imageInfoWindow)
         left_side_layout = QtWidgets.QVBoxLayout()
         left_side_widget = QtWidgets.QWidget()
         left_side_widget.setLayout(left_side_layout)
         
-        # Set up selectedImageWindow and its widgets
         self.selectedImageWindow = QtWidgets.QGroupBox(parent=left_side_widget)
         self.selectedImageWindow.setObjectName("selectedImageWindow")
         
@@ -31,17 +27,14 @@ class ImageWindow(QtWidgets.QWidget):
         self.selectedImage.setGeometry(QtCore.QRect(10, 20, 400, 300))
         self.selectedImage.setPixmap(pixmap.scaled(400, 300, QtCore.Qt.AspectRatioMode.KeepAspectRatio))
         self.selectedImage.setObjectName("selectedImage")
-        
-        # Set up imageInfoWindow and its widgets
+   
         self.imageInfoWindow = QtWidgets.QGroupBox(parent=left_side_widget)
         self.imageInfoWindow.setObjectName("imageInfoWindow")
         self.imageInfoLayout = QtWidgets.QVBoxLayout(self.imageInfoWindow)
         
-        # Add selectedImageWindow and imageInfoWindow to left side layout
         left_side_layout.addWidget(self.selectedImageWindow)
         left_side_layout.addWidget(self.imageInfoWindow)
         
-        # Right side layout (scrollable grid layout for keyframes)
         self.scrollArea = QtWidgets.QScrollArea(parent=self)
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setObjectName("scrollArea")
@@ -55,45 +48,42 @@ class ImageWindow(QtWidgets.QWidget):
 
         self.scrollArea.setWidget(self.scrollAreaWidgetContents)
         
-        # Add widgets to splitter
         splitter.addWidget(left_side_widget)
         splitter.addWidget(self.scrollArea)
+        splitter.setSizes([6, 4]) 
         
-        # Set the sizes of the widgets in the splitter
-        splitter.setSizes([6, 4])  # Adjust the ratio to make the left side larger and the right side smaller
-        
-        # Set the layout
         layout = QtWidgets.QVBoxLayout()
         layout.addWidget(splitter)
         self.setLayout(layout)
         
-        # Load keyframes and metadata
         self.loadKeyframes(image_path)
         self.load_metadata(image_path)
-    
+        self.retranslateUi(image_path)
+
+    def retranslateUi(self, image_path):
+        _translate = QtCore.QCoreApplication.translate
+        subdir, file_name = os.path.split(image_path)
+        subdir = os.path.basename(subdir)
+        selected_image_title = f"{subdir}/{file_name}"
+        self.selectedImageWindow.setTitle(_translate("ImageWindow", selected_image_title))
+        self.imageInfoWindow.setTitle(_translate("ImageWindow", "Image Information"))
+
     def loadKeyframes(self, image_path):
         keyframe_paths = []
-    
-        # Extract the directory and the base name of the image
         directory = os.path.dirname(image_path)
         base_name = os.path.basename(image_path)
-    
-        # Extract the number from the base name
         base_number = int(os.path.splitext(base_name)[0])
     
-        # Generate paths for 10 images before and 10 images after
         for i in range(base_number - 10, base_number + 11):
             keyframe_path = os.path.join(directory, f"{i}.jpg")
             if os.path.exists(keyframe_path):
                 keyframe_paths.append(keyframe_path)
     
-        # Clear the grid layout before adding new images
         for i in reversed(range(self.gridLayout.count())): 
             widget_to_remove = self.gridLayout.itemAt(i).widget()
             self.gridLayout.removeWidget(widget_to_remove)
             widget_to_remove.setParent(None)
-    
-        # Add images to the grid layout
+
         for index, filename in enumerate(keyframe_paths):
             if filename.lower().endswith('.jpg'):
                 pixmap = QtGui.QPixmap(filename)
@@ -111,13 +101,12 @@ class ImageWindow(QtWidgets.QWidget):
                 overlay_layout.addWidget(image_label)
                 overlay_layout.addWidget(name_label, alignment=QtCore.Qt.AlignmentFlag.AlignBottom | QtCore.Qt.AlignmentFlag.AlignRight)
                 
-                # Create a widget to hold the overlay layout
                 overlay_widget = QtWidgets.QWidget()
                 overlay_widget.setLayout(overlay_layout)
             
                 row = index // 5
                 col = index % 5
-                self.gridLayout.addWidget(image_label, row, col)
+                self.gridLayout.addWidget(overlay_widget, row, col)
 
     def load_metadata(self, image_path):
         publish_date, watch_url = getImageInformation(image_path)
@@ -128,13 +117,15 @@ class ImageWindow(QtWidgets.QWidget):
             'Watch URL': watch_url
         }
 
+        vbox = QtWidgets.QVBoxLayout()
         for key, value in metadata.items():
             if key == 'Watch URL':
                 label = QtWidgets.QLabel(f'<a href="{value}">{key}: {value}</a>')
                 label.setOpenExternalLinks(True)
             else:
                 label = QtWidgets.QLabel(f"{key}: {value}")
-            self.imageInfoLayout.addWidget(label)
+            vbox.addWidget(label)
+        self.imageInfoLayout.addLayout(vbox)
 
     def clear_layout(self, layout):
         while layout.count():
