@@ -156,7 +156,6 @@ class Ui_MainWindow(object):
                 image_label.setPixmap(pixmap.scaled(150, 150, QtCore.Qt.AspectRatioMode.KeepAspectRatio))
                 image_label.setFixedSize(150, 150)
                 
-                # Add click event to open image in new window
                 image_label.mousePressEvent = lambda event, img_path=image_path: self.show_image_in_window(img_path)
                 
                 name_label = QtWidgets.QLabel(filename)
@@ -260,7 +259,6 @@ class Ui_MainWindow(object):
                 container.setLayout(overlay_layout)
                 
                 self.gridLayout.addWidget(container)
-        
 
 def run_app(path = None):
     import sys
