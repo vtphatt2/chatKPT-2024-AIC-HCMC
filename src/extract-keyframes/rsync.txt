@@ -1,0 +1,11 @@
+rsync -a -P root@103.20.97.119:/root/keyframes/keyframes_L24.zip /Users/VoThinhPhat/Desktop/chatKPT-2024-AIC-HCMC/data/batch2/keyframes
+
+rsync -a -P root@103.20.97.119:/root/map-keyframes/ /Users/VoThinhPhat/Desktop/chatKPT-2024-AIC-HCMC/data/batch2/map-keyframes
+
+rsync -a -P root@103.20.97.119:/root/chatKPT-2024-AIC-HCMC/data/batch2/clip-features-14 /Users/VoThinhPhat/Desktop/chatKPT-2024-AIC-HCMC/data/batch2
+
+rsync -a -P /Users/VoThinhPhat/Desktop/chatKPT-2024-AIC-HCMC/src/task-former root@103.20.97.119:/root/chatKPT-2024-AIC-HCMC/src
+
+rsync -a -P root@103.20.97.119:/root/chatKPT-2024-AIC-HCMC/data/batch2/task-former /Users/VoThinhPhat/Desktop/chatKPT-2024-AIC-HCMC/data/batch2
+
+eqgpEMLV8762
