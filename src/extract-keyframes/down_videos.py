@@ -26,6 +26,7 @@ def get_and_save_frame(video_path, frame_id, save_path, filename):
 
 os.makedirs('keyframes', exist_ok=True)
 os.makedirs('videos', exist_ok=True)
+os.makedirs('video', exist_ok=True)
 os.makedirs('map-keyframes', exist_ok=True)
 model = TransNetV2('/root/transnetv2-weights')
 
@@ -48,10 +49,10 @@ for video, link in video_link_dict.items():
     ]
     subprocess.run(command, check=True)
 
-    command = ['unzip', f'videos/{video}.zip', '-d', 'videos/']
+    command = ['unzip', f'videos/{video}_a.zip', '-d', 'videos/']
     subprocess.run(command, check=True)
 
-    os.remove(f'videos/{video}.zip')
+    os.remove(f'videos/{video}_a.zip')
     os.rename('videos/video', f'videos/{video}')
     shutil.move(f'videos/{video}', 'video/')
     os.rmdir('videos')
