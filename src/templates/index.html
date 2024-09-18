@@ -17,6 +17,21 @@
         .processed-output {
             margin-top: 20px;  /* Add space above the processed output section */
         }
+
+        /* Flex container to align "Chọn file CSV" and "Enter new file name" horizontally */
+        .file-container {
+            display: flex;
+            align-items: center;  /* Align items in the center of the row */
+            gap: 20px;  /* Add space between file select and file creation */
+        }
+
+        .create-button {
+            background-color: blue;
+            color: white;
+            padding: 5px 10px;
+            border: none;
+            cursor: pointer;
+        }
     </style>
     <script type="text/javascript">
         // JavaScript function to clear both the input text area and the processed output
@@ -27,6 +42,49 @@
     </script>
 </head>
 <body>
+    <h1>Submission</h1>
+
+    <!-- Flex container for choosing file and creating file -->
+    <div class="file-container">
+        <form method="GET" action="/">
+            <label for="file_name">Chọn file CSV:</label>
+            <select id="file_name" name="file_name" onchange="this.form.submit()">
+                <option value="">-- Chọn file CSV --</option>
+                {% for file in csv_files %}
+                    <option value="{{ file }}" {% if file == selected_file %}selected{% endif %}>{{ file }}</option>
+                {% endfor %}
+            </select>
+        </form>
+
+        <!-- Form to create a new CSV file -->
+        <form method="POST" action="/create_file">
+            <label for="new_file_name">Enter new file name:</label>
+            <input type="text" id="new_file_name" name="file_name" required placeholder="Enter filename with extension">
+            <button type="submit" class="create-button">Create File</button>
+        </form>
+    </div>
+
+    <br>
+
+    <!-- Text area for displaying and modifying CSV content -->
+    <form method="POST" action="/save_csv">
+        <!-- Text area for displaying and modifying CSV content -->
+        <textarea id="csv_edit_text" name="csv_edit_text" rows="20" cols="20" style="font-size: 13px;">{{ csv_content or '' }}</textarea>
+
+        <input type="hidden" name="returned_text" value="{{ returned_text }}">
+        <input type="hidden" name="file_name" value="{{ selected_file }}">
+        <input type="hidden" name="csv_edit_text" value="{{ csv_content or '' }}">
+
+        <br>
+        <!-- Save button to save CSV content -->
+        <button type="submit">Save</button>
+    </form>
+
+    <form method="POST" action="/delete_csv">
+        <input type="hidden" name="file_name" value="{{ selected_file }}">
+        <button type="submit" style="background-color:red; color:white;">Delete</button>
+    </form>
+
     <h1>Search by Text</h1>
 
     <div class="container">
@@ -37,7 +95,10 @@
             <!-- Text area for input -->
             <textarea id="inputText" name="inputText" rows="8" cols="60" style="font-size: 18px;">{{ returned_text or '' }}</textarea>
             <br>
-            
+
+            <input type="hidden" name="csv_edit_text" value="{{ csv_content or '' }}">
+            <input type="hidden" name="file_name" value="{{ selected_file }}">
+
             <!-- Submit and Clear buttons -->
             <button type="submit">Submit</button>
             <button type="button" onclick="clearText()">Clear</button>
