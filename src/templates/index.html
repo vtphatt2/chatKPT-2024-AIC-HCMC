@@ -5,9 +5,35 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>chatKPT</title>
     <style>
-        .container {
+        .interact_with_csv_files {
             display: flex;
-            align-items: flex-start;  /* Align items to the top of the container */
+            align-items: flex-start; 
+            gap: 50px;
+        }
+
+        .create-button {
+            background-color: blue;
+            color: white;
+            padding: 5px 10px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .display_csv_content {
+            display: flex;
+            align-items: center; /* Vertically center the items */
+            gap: 100px; /* Add some space between the textarea and the notification text */
+        }
+
+        .save_and_delete_button {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .search_by_text_container {
+            display: flex;
+            gap: 30px;
         }
 
         .output {
@@ -24,14 +50,6 @@
             align-items: center;  /* Align items in the center of the row */
             gap: 20px;  /* Add space between file select and file creation */
         }
-
-        .create-button {
-            background-color: blue;
-            color: white;
-            padding: 5px 10px;
-            border: none;
-            cursor: pointer;
-        }
     </style>
     <script type="text/javascript">
         // JavaScript function to clear both the input text area and the processed output
@@ -44,14 +62,15 @@
 <body>
     <h1>Submission</h1>
 
-    <!-- Flex container for choosing file and creating file -->
-    <div class="file-container">
+    <!-- Container for choosing file and creating file -->
+    <div class="interact_with_csv_files">
+        <!-- Form to choose csv file -->
         <form method="GET" action="/">
-            <label for="file_name">Chọn file CSV:</label>
+            <label for="file_name">Choose csv file:</label>
             <select id="file_name" name="file_name" onchange="this.form.submit()">
-                <option value="">-- Chọn file CSV --</option>
+                <option value="">-- None --</option>
                 {% for file in csv_files %}
-                    <option value="{{ file }}" {% if file == selected_file %}selected{% endif %}>{{ file }}</option>
+                    <option value="{{ file }}" {% if file == selected_csv_file %}selected{% endif %}>{{ file }}</option>
                 {% endfor %}
             </select>
         </form>
@@ -59,56 +78,56 @@
         <!-- Form to create a new CSV file -->
         <form method="POST" action="/create_file">
             <label for="new_file_name">Enter new file name:</label>
-            <input type="text" id="new_file_name" name="file_name" required placeholder="Enter filename with extension">
+            <input type="text" id="new_file_name" name="file_name" style="font-size: 15px;" required placeholder="Enter filename with extension">
             <button type="submit" class="create-button">Create File</button>
         </form>
     </div>
 
-    <br>
-
-    <!-- Text area for displaying and modifying CSV content -->
-    <form method="POST" action="/save_csv">
+    <div class="display_csv_content" style="margin-bottom: 10px;">
         <!-- Text area for displaying and modifying CSV content -->
         <textarea id="csv_edit_text" name="csv_edit_text" rows="20" cols="20" style="font-size: 13px;">{{ csv_content or '' }}</textarea>
+        <b id="notify_csv_interact" style="font-size: 30px;">{{ notify_interact_text or '' }} </b>
+    </div>
 
-        <input type="hidden" name="returned_text" value="{{ returned_text }}">
-        <input type="hidden" name="file_name" value="{{ selected_file }}">
-        <input type="hidden" name="csv_edit_text" value="{{ csv_content or '' }}">
+    <div class ="save_and_delete_button">
+        <form method="POST" action="/delete_csv">
+            <input type="hidden" name="file_name" value="{{ selected_csv_file }}">
+            <button type="submit" style="background-color:red; color:white; cursor: pointer;">Delete</button>
+        </form>
 
-        <br>
-        <!-- Save button to save CSV content -->
-        <button type="submit">Save</button>
-    </form>
-
-    <form method="POST" action="/delete_csv">
-        <input type="hidden" name="file_name" value="{{ selected_file }}">
-        <button type="submit" style="background-color:red; color:white;">Delete</button>
-    </form>
+        <form method="POST" action="/save_csv" onsubmit="document.getElementById('hidden_csv_edit_text').value = document.getElementById('csv_edit_text').value;">
+            <input type="hidden" id="hidden_csv_edit_text" name="csv_edit_text" value="">
+            <input type="hidden" name="file_name" value="{{ selected_csv_file }}">
+            <!-- Save button to save CSV content -->
+            <button type="submit" style="background-color:green; color:white; cursor: pointer;">Save</button>
+        </form>
+    </div>
 
     <h1>Search by Text</h1>
-
-    <div class="container">
+    <div class="search_by_text_container">
         <!-- Form for inputting large text -->
-        <form method="POST" action="/submit">
+        <form method="POST" action="/submit_text">
             <label for="inputText">Enter text:</label>
             <br>
-            <!-- Text area for input -->
-            <textarea id="inputText" name="inputText" rows="8" cols="60" style="font-size: 18px;">{{ returned_text or '' }}</textarea>
+            <textarea id="inputText" name="inputText" rows="8" cols="60" style="font-size: 18px;">{{ user_text or '' }}</textarea>
             <br>
-
             <input type="hidden" name="csv_edit_text" value="{{ csv_content or '' }}">
-            <input type="hidden" name="file_name" value="{{ selected_file }}">
+            <input type="hidden" name="file_name" value="{{ selected_csv_file }}">
+            <input type="hidden" name="user_text" value="{{ user_text or '' }}">
+
+            <label for="output_file">Output file:</label>
+            <input type="text" id="output_file" name="output_file" style="font-size: 15px;" required placeholder="Enter filename with extension" value="{{ output_file or '' }}">
 
             <!-- Submit and Clear buttons -->
-            <button type="submit">Submit</button>
             <button type="button" onclick="clearText()">Clear</button>
+            <button type="submit" style="background-color:green; color:white; cursor: pointer;">Search</button>
         </form>
 
         <!-- "You entered" text displayed next to the inputText field -->
-        <div class="output">
-            {% if returned_text %}
+        <div class="notify_submit_text">
+            {% if notify_submit_text %}
                 <h2>You entered:</h2>
-                <p>{{ returned_text }}</p>
+                <p>{{ notify_submit_text }}</p>
             {% endif %}
         </div>
     </div>
