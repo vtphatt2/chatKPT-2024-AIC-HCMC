@@ -116,6 +116,12 @@
         <form method="POST" action="/write_selected_imgs_to_file">
             <input type="hidden" name="file_name" value="{{ selected_csv_file }}">
             <button type="submit" style="background-color:blue; color:white; cursor: pointer;">Write selected images to file</button>
+            <input type="hidden" name="csv_edit_text" value="{{ csv_content or '' }}">
+            <input type="hidden" name="file_name" value="{{ selected_csv_file }}">
+            <input type="hidden" name="user_text" value="{{ user_text or '' }}">
+            <input type="hidden" name="inputText" value="{{ user_text or '' }}">
+            <input type="hidden" name="bias" value="{{ bias or 100 }}">
+            <input type="hidden" name="no_images" style="font-size: 15px;" value="{{ no_images or 100 }}">
         </form>
     </div>
 
