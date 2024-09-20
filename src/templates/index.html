@@ -57,6 +57,17 @@
             document.getElementById("inputText").value = "";  // Clear the value of the textarea
             document.getElementById("processedOutput").innerHTML = "";  // Clear the processed output
         }
+
+        window.addEventListener("beforeunload", function() {
+            localStorage.setItem("scrollPosition", window.scrollY);
+        });
+
+        window.addEventListener("load", function() {
+        const scrollPosition = localStorage.getItem("scrollPosition");
+            if (scrollPosition) {
+                window.scrollTo(0, parseInt(scrollPosition, 10));
+            }
+        });
     </script>
 </head>
 <body>
@@ -101,6 +112,11 @@
             <!-- Save button to save CSV content -->
             <button type="submit" style="background-color:green; color:white; cursor: pointer;">Save</button>
         </form>
+
+        <form method="POST" action="/write_selected_imgs_to_file">
+            <input type="hidden" name="file_name" value="{{ selected_csv_file }}">
+            <button type="submit" style="background-color:blue; color:white; cursor: pointer;">Write selected images to file</button>
+        </form>
     </div>
 
     <h1>Search by Text</h1>
@@ -121,6 +137,21 @@
             <!-- Submit and Clear buttons -->
             <button type="button" onclick="clearText()">Clear</button>
             <button type="submit" style="background-color:green; color:white; cursor: pointer;">Search</button>
+
+            <br>
+            <label for="no_images">Number of images:</label>
+            <input type="text" id="no_images" name="no_images" style="font-size: 15px;" value="{{ no_images or 100 }}">
+            <br>
+            <label for="bias">Bias: </label>
+            <select id="bias" name="bias">
+                <option value="100">100</option>
+                <option value="150">150</option>
+                <option value="200">200</option>
+                <option value="250">250</option>
+                <option value="300">300</option>
+                <option value="450">450</option>
+                <option value="500">500</option>
+            </select>
         </form>
 
         <!-- "You entered" text displayed next to the inputText field -->
