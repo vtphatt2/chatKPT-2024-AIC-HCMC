@@ -37,7 +37,7 @@ def init_routes(app):
 
         return render_template('index.html', csv_files=csv_files, selected_csv_file=selected_csv_file, notify_submit_text=returned_text, 
                             csv_content=csv_content, notify_interact_text=notify_interact_text)
-    
+        
     @app.route('/save_csv', methods=['POST'])
     def save_csv():
         csv_content = request.form.get('csv_edit_text') 
@@ -80,7 +80,10 @@ def init_routes(app):
     @app.route('/create_file', methods=['POST'])
     def create_file():
         file_name = request.form.get('file_name')
+
         if file_name:
+            if (not file_name.endswith('.csv')):
+                file_name += '.csv'
             file_path = os.path.join(SUBMISSION_FOLDER, file_name)
             try:
                 if not os.path.exists(file_path):
@@ -90,4 +93,6 @@ def init_routes(app):
                 return f"Error creating file: {str(e)}"
 
         return redirect(url_for('home')) 
+    
+    
 

@@ -98,6 +98,20 @@
         <!-- Text area for displaying and modifying CSV content -->
         <textarea id="csv_edit_text" name="csv_edit_text" rows="20" cols="20" style="font-size: 13px;">{{ csv_content or '' }}</textarea>
         <b id="notify_csv_interact" style="font-size: 30px;">{{ notify_interact_text or '' }} </b>
+
+        <form method="POST" action="/discard_video">
+            <input type="hidden" name="file_name" value="{{ selected_csv_file }}">
+            <label for="discard_videos">Enter discarded videos:</label>
+            <textarea id="discard_videos" name="discard_videos" rows="10" cols="20" style="font-size: 13px;">{{ discard_video or '' }}</textarea>
+            <button type="submit" style="background-color:red; color:white; cursor: pointer;">Discard</button>
+
+            <input type="hidden" name="csv_edit_text" value="{{ csv_content or '' }}">
+            <input type="hidden" name="file_name" value="{{ selected_csv_file }}">
+            <input type="hidden" name="user_text" value="{{ user_text or '' }}">
+            <input type="hidden" name="inputText" value="{{ user_text or '' }}">
+            <input type="hidden" name="bias" value="{{ bias or 100 }}">
+            <input type="hidden" name="no_images" style="font-size: 15px;" value="{{ no_images or 100 }}">
+        </form>
     </div>
 
     <div class ="save_and_delete_button">
@@ -124,6 +138,25 @@
             <input type="hidden" name="no_images" style="font-size: 15px;" value="{{ no_images or 100 }}">
         </form>
     </div>
+
+    <h2>See pre and post</h2>
+    <form method="POST" action="/see_pre_and_post">
+        <label for="video_name">Enter video:</label>
+        <input type="text" name="video_name" value="{{ video_name or '' }}">
+        <label for="frame_id">Enter frame_id:</label>
+        <input type="text" name="frame_id" value="{{ frame_id or '' }}">
+        <button type="submit" style="background-color:green; color:white; cursor: pointer;">See</button>
+
+        <p>{{ processed_text_pre_and_post | safe }}</p>
+
+        <input type="hidden" name="file_name" value="{{ selected_csv_file }}">
+        <input type="hidden" name="csv_edit_text" value="{{ csv_content or '' }}">
+        <input type="hidden" name="file_name" value="{{ selected_csv_file }}">
+        <input type="hidden" name="user_text" value="{{ user_text or '' }}">
+        <input type="hidden" name="inputText" value="{{ user_text or '' }}">
+        <input type="hidden" name="bias" value="{{ bias or 100 }}">
+        <input type="hidden" name="no_images" style="font-size: 15px;" value="{{ no_images or 100 }}">
+    </form>
 
     <h1>Search by Text</h1>
     <div class="search_by_text_container">
@@ -171,7 +204,7 @@
 
     <!-- Additional output section below the input field for processed text -->
     <div class="processed-output">
-        <b id="processedOutput">{{ processed_text or '' }}</b>
+        <p>{{ processed_text | safe }}</p>
     </div>
 </body>
 </html>
