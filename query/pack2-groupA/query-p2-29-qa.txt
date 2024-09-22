@@ -1,0 +1,1 @@
+Khung cảnh trong một lớp học, bảng bên dưới lớp học được trang trí trên tường có thể nhìn rõ 5 bông hoa to theo thứ tự màu xanh dương, cam, vàng, xanh lá, đỏ. Bên dưới những bông hoa này cho biết lớp này là lớp 1A*. Hỏi * là số mấy?
