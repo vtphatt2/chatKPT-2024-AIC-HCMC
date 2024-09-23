@@ -28,15 +28,13 @@ from clip.clip import _transform, load, tokenize
 # run in about 15 seconds
 if fo.dataset_exists("AIC_2024"):
     fo.delete_dataset("AIC_2024")
-    
-dataset = fo.Dataset.from_images_dir(
-    name="AIC_2024", 
-    images_dir=os.path.join("..", "data", "batch1", "keyframes"), 
-    recursive=True
-)
+batch_dirs = glob(os.path.join("..", "data", "batch*", "keyframes"))
+dataset = fo.Dataset(name="AIC_2024")
+for batch_dir in batch_dirs:
+    dataset.add_images_dir(batch_dir, recursive=True)
 
 
-# In[3]:
+# In[4]:
 
 
 # run in about 36 seconds
@@ -48,7 +46,34 @@ for sample in dataset:
     sample.save()
 
 
-# In[4]:
+# In[5]:
+
+
+# # object detection
+# for sample in dataset:
+#     object_path = glob(os.path.join("..", "data", "batch*", "object", sample['video'], sample['keyframe_id'] + ".json"))
+#     with open(object_path) as jsonfile:
+#         det_data = json.load(jsonfile)
+#     detections = []
+#     for cls, box, score in zip(det_data['detection_class_entities'], det_data['detection_boxes'], det_data['detection_scores']):
+#         # convert to [top-left-x, top-left-y, width, height]
+#         box = [float(coord) for coord in box]  # Chuyển đổi các phần tử của box thành số thực
+#         boxf = [box[1], box[0], box[3] - box[1], box[2] - box[0]]
+#         scoref = float(score)
+
+#         # Only add objects with confidence > 0.4
+#         if scoref > 0.4:
+#             detections.append(
+#                 fo.Detection(label=cls, 
+#                              bounding_box=boxf, 
+#                              confidence=scoref)
+#             )
+
+#     sample["object_faster_rcnn"] = fo.Detections(detections=detections)
+#     sample.save()
+
+
+# In[5]:
 
 
 # run in nearly 40 seconds
@@ -66,7 +91,7 @@ for sample in dataset:
     sample.save()
 
 
-# In[5]:
+# In[6]:
 
 
 # run in about 1 minutes
@@ -106,7 +131,7 @@ for sample in dataset:
 dataset.first()
 
 
-# In[6]:
+# In[7]:
 
 
 # run in 10 minutes
@@ -115,7 +140,7 @@ model = CLIPModel.from_pretrained("openai/clip-vit-large-patch14-336").to(device
 processor = CLIPProcessor.from_pretrained("openai/clip-vit-large-patch14-336")
 
 
-# In[7]:
+# In[8]:
 
 
 # run in 11 seconds
@@ -127,10 +152,10 @@ for sample in dataset:
 image_embeddings = np.array(image_embeddings)
 
 
-# In[12]:
+# In[9]:
 
 
-def submission(text_query, k, csv_file):
+def submission(text_query, k, csv_file, Subquery=False):
     inputs = processor(text=[text_query], return_tensors="pt", padding=True, truncation=True).to(device)
     with torch.no_grad():
         text_features = model.get_text_features(**inputs).cpu().numpy().flatten()
@@ -147,50 +172,87 @@ def submission(text_query, k, csv_file):
     for index in top_k_indices:
         dataset_submission.add_sample(image_samples[index])
 
-    with open(csv_file, mode='w', newline='') as file:
+    mode = 'a' if Subquery else 'w'
+    with open(csv_file, mode=mode, newline='') as file:
         writer = csv.DictWriter(file, fieldnames=['video', 'frame_id'])
-        # writer.writeheader()
         for sample in dataset_submission:
             writer.writerow({'video': sample['video'], 'frame_id': sample['frame_id']})
 
     return dataset_submission
 
 
-# In[25]:
+# In[10]:
+
+
+# text_query = "scene of a rescuer wearing a blue flashlight on his head rescuing a person buried underground."
+# output_file = "output.csv"
+
+# output_file = os.path.join('..', 'submission', output_file)
+# dataset_submission = submission(text_query, 500, output_file)
+# session = fo.launch_app(dataset_submission, auto=False)
+# session.open_tab()
+
+
+# In[11]:
+
+
+import csv
+from collections import OrderedDict
+
+def organizeOutput(input_file, output_file):
+    with open(input_file, 'r') as file:
+        reader = csv.reader(file)
+        data = list(reader)
+
+    organized_data = OrderedDict()
+    for row in data:
+        key = row[0]
+        if key not in organized_data:
+            organized_data[key] = []
+        organized_data[key].append(row)
+
+    for key in organized_data:
+        organized_data[key].sort(key=lambda x: float(x[1]))
+
+    with open(output_file, 'w', newline='') as file:
+        writer = csv.writer(file)
+        for rows in organized_data.values():
+            writer.writerows(rows)
+
+organizeOutput('output.csv', 'output_organized.csv')
+
+
+# In[12]:
 
 
 import os
 import pandas as pd
 
 def calculate_keyframe_id(path):
-
-    # Đọc file CSV
     df = pd.read_csv(path, header=None, names=['video', 'frame_id'])
-
-    # Lưu đường dẫn keyframes
     keyframe_paths = []
 
     for index, row in df.iterrows():
         video = row['video']
         frame_id = row['frame_id']
-        
-        # Kiểm tra video có tồn tại trong dictionary và frame_id có tồn tại không
-        if video in video_frameid_dict and (video_frameid_dict[video] == frame_id).any():
-            # Lấy chỉ số keyframe
-            key_frame = video_frameid_dict[video][video_frameid_dict[video] == frame_id].index[0] + 1
 
-            # Tạo đường dẫn keyframe
-            keyframe_path = os.path.join(
-                r"D:\AIC 2024\chatKPT-2024-AIC-HCMC\data\batch1\keyframes",
-                f"keyframes_{video.split('_')[0]}",
-                video,
-                f"{key_frame:03d}.jpg"
-            )
-            keyframe_paths.append(keyframe_path)
+        if video in video_frameid_dict and (video_frameid_dict[video] == frame_id).any():
+            key_frame = video_frameid_dict[video][video_frameid_dict[video] == frame_id].index[0] + 1
+            batch_dirs = glob(os.path.join("..", "data", "batch*", "keyframes"))
+
+            for batch_dir in batch_dirs:
+                keyframe_path = os.path.join(
+                    batch_dir,
+                    f"keyframes_{video.split('_')[0]}",
+                    video,
+                    f"{key_frame:03d}.jpg"
+                )
+                if os.path.exists(keyframe_path):
+                    absolute_path = os.path.abspath(keyframe_path)
+                    keyframe_paths.append(absolute_path)
         else:
             print(f'Video {video} and frame_id {frame_id} not found in the dataset')
 
-    # Lưu đường dẫn keyframes vào file
     with open("image_result_path.txt", "w") as file:
         for path in keyframe_paths:
             file.write(path + "\n")
@@ -198,57 +260,16 @@ def calculate_keyframe_id(path):
     return keyframe_paths
 
 
-# In[26]:
-
-print("Load finished")
-
-# In[11]:
+# In[14]:
 
 
-import json
-import os
-import fiftyone as fo
-
-def getMajorInfo(path):
-    with open(path, 'r', encoding='utf-8') as file:
-        data = json.load(file)
-        publish_date = data.get('publish_date')
-        watch_url = data.get('watch_url')
-        return publish_date, watch_url
-
-def getImageInformation(path):
-    # Transform path to metadata path
-    base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(path))))
-    video_id = os.path.basename(os.path.dirname(path))
-    metadata_filename = f"{video_id}.json"
-    metadata_path = os.path.join(base_dir, "metadata", metadata_filename)
-    
-    # Get publish_date and watch_url
-    publish_date, watch_url = getMajorInfo(metadata_path)
-        
-    return publish_date, watch_url
-
-# Example
-#path = "D:\\AIC 2024\\chatKPT-2024-AIC-HCMC\\data\\batch1\\keyframes\\keyframes_L01\\L01_V001\\001.jpg"
-#publish_date, watch_url, frame_id = getImageInformation(path)
-#print(f"Publish Date: {publish_date}")
-#print(f"Watch URL: {watch_url}")
-#print(f"Frame ID: {frame_id}")
+# path_to_csv = os.path.join("..", "src", "output.csv")
+# keyframe_paths = calculate_keyframe_id(path_to_csv)
+# for path in keyframe_paths:
+#     print(path)
 
 
-# In[11]:
-
-
-# text_query = "A boat that can run on ice, black in color. This boat is powered by a propeller engine on top that blows out the back. The boat was a rescue vehicle for a victim who fell into an icy lake."
-# output_file = "output.csv"
-
-# output_file = os.path.join('..', 'submission', output_file)
-# dataset_submission = submission(text_query, 100, output_file)
-# # session = fo.launch_app(dataset_submission, auto=False)
-# # session.open_tab()
-
-
-# In[20]:
+# In[15]:
 
 
 def loadKeyframes(image_path):
@@ -263,4 +284,24 @@ def loadKeyframes(image_path):
             keyframe_paths.append(keyframe_path)
                 
     return keyframe_paths
+
+
+# In[ ]:
+
+
+def getMajorInfo(path):
+    with open(path, 'r', encoding='utf-8') as file:
+        data = json.load(file)
+        publish_date = data.get('publish_date')
+        watch_url = data.get('watch_url')
+        return publish_date, watch_url
+
+def getImageInformation(path):
+    base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(path))))
+    video_id = os.path.basename(os.path.dirname(path))
+    metadata_filename = f"{video_id}.json"
+    metadata_path = os.path.join(base_dir, "metadata", metadata_filename)
+    publish_date, watch_url = getMajorInfo(metadata_path)
+  
+    return publish_date, watch_url
 

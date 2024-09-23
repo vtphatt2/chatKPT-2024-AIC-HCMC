@@ -6,7 +6,7 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtWidgets import QFileDialog
 from sklearn.metrics.pairwise import cosine_similarity
 import fiftyone as fo
-from submission import submission, calculate_keyframe_id, getImageInformation
+from submission import submission, calculate_keyframe_id, getImageInformation, organizeOutput
 
 class ImageWindow(QtWidgets.QWidget):
     def __init__(self, image_path):
@@ -202,6 +202,11 @@ class Ui_MainWindow(object):
         self.clearAll = QtWidgets.QPushButton(parent=self.centralwidget)
         self.clearAll.setGeometry(QtCore.QRect(30, 590, 121, 41))
         self.clearAll.setObjectName("clearAll")
+
+        # Set up Search O (Search and Organize)
+        self.searchO = QtWidgets.QPushButton(parent=self.sketchInputWindow)
+        self.searchO.setGeometry(QtCore.QRect(10, 170, 75, 41))
+        self.searchO.setObjectName("searchO")
         
         # Set up scrollable grid layout
         self.scrollArea = QtWidgets.QScrollArea(parent=self.centralwidget)
@@ -234,6 +239,7 @@ class Ui_MainWindow(object):
         self.clearAll.clicked.connect(self.clear_all_content)
         self.loadGraphic.clicked.connect(self.load_graphic_image)
         self.search.clicked.connect(self.handle_search)
+        self.searchO.clicked.connect(self.handle_searchO)
 
         # Set up scene for graphicsView
         self.scene = QtWidgets.QGraphicsScene()
@@ -255,6 +261,7 @@ class Ui_MainWindow(object):
         self.loadGraphic.setText(_translate("MainWindow", "Load"))
         self.search.setText(_translate("MainWindow", "Search"))
         self.clearAll.setText(_translate("MainWindow", "Clear all"))
+        self.searchO.setText(_translate("MainWindow", "Search O"))
 
     def loadImages(self, image_result_path=None):
         if image_result_path is None:
@@ -349,9 +356,26 @@ class Ui_MainWindow(object):
     def handle_search(self):
         text_query = self.textInput.toPlainText()
         csv_file = "output.csv"
+
+        subqueries = text_query.split('/') if '/' in text_query else [text_query]
+        is_subquery = '/' in text_query
+
+        for subquery in subqueries:
+            subquery = subquery.strip()
+            dataset_submission = submission(subquery, 500, csv_file, is_subquery)
     
-        dataset_submission = submission(text_query, 100, csv_file)
-        path_to_csv = "output.csv" 
+        keyframe_paths = calculate_keyframe_id(csv_file)
+
+        # Clear the existing layout
+        self.clear_layout(self.gridLayout)
+
+        # load images from image_result_path.txt and put to loadImages
+        self.loadImages("image_result_path.txt")
+
+    def handle_searchO(self):
+
+        organizeOutput("output.csv", "output_organized.csv")
+        path_to_csv = "output_organized.csv" 
         keyframe_paths = calculate_keyframe_id(path_to_csv)
 
         # Clear the existing layout
