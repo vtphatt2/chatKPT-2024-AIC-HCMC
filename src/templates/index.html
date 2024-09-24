@@ -3,208 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>chatKPT</title>
-    <style>
-        .interact_with_csv_files {
-            display: flex;
-            align-items: flex-start; 
-            gap: 50px;
-        }
-
-        .create-button {
-            background-color: blue;
-            color: white;
-            padding: 5px 10px;
-            border: none;
-            cursor: pointer;
-        }
-
-        .display_csv_content {
-            display: flex;
-            align-items: center; /* Vertically center the items */
-            gap: 100px; /* Add some space between the textarea and the notification text */
-        }
-
-        .save_and_delete_button {
-            display: flex;
-            align-items: center;
-            gap: 30px;
-        }
-
-        .search_by_text_container {
-            display: flex;
-            gap: 30px;
-        }
-
-        .output {
-            margin-left: 20px;  /* Add space between the input field and the "You entered" text */
-        }
-
-        .processed-output {
-            margin-top: 20px;  /* Add space above the processed output section */
-        }
-
-        /* Flex container to align "Chọn file CSV" and "Enter new file name" horizontally */
-        .file-container {
-            display: flex;
-            align-items: center;  /* Align items in the center of the row */
-            gap: 20px;  /* Add space between file select and file creation */
-        }
-    </style>
-    <script type="text/javascript">
-        // JavaScript function to clear both the input text area and the processed output
-        function clearText() {
-            document.getElementById("inputText").value = "";  // Clear the value of the textarea
-            document.getElementById("processedOutput").innerHTML = "";  // Clear the processed output
-        }
-
-        window.addEventListener("beforeunload", function() {
-            localStorage.setItem("scrollPosition", window.scrollY);
-        });
-
-        window.addEventListener("load", function() {
-        const scrollPosition = localStorage.getItem("scrollPosition");
-            if (scrollPosition) {
-                window.scrollTo(0, parseInt(scrollPosition, 10));
-            }
-        });
-    </script>
+    <title>chatKPT - Web UI</title>
 </head>
 <body>
-    <h1>Submission</h1>
+    <h1 style="text-align: center;">Welcome to chatKPT's Keyframes Search System</h1>
+    <p style="text-align: center;">This is the system developed by chatKPT for The 2024 AI Challenge Ho Chi Minh City</p>
 
-    <!-- Container for choosing file and creating file -->
-    <div class="interact_with_csv_files">
-        <!-- Form to choose csv file -->
-        <form method="GET" action="/">
-            <label for="file_name">Choose csv file:</label>
-            <select id="file_name" name="file_name" onchange="this.form.submit()">
-                <option value="">-- None --</option>
-                {% for file in csv_files %}
-                    <option value="{{ file }}" {% if file == selected_csv_file %}selected{% endif %}>{{ file }}</option>
+    <h2 style="margin-left: 80px;">CSV files content</h2>
+    <div style="display: flex; align-items: center;">
+        <div style="display: flex; flex-direction: column; margin-left: 20px;">
+            <select id="csvFiles" name="csvFiles" style="width: 200px; height: 100px; font-size: 30px; margin-left: 30px;">
+                <option value="None" selected disabled>None</option>
+                <!-- Loop through the list of CSV files and create option elements -->
+                {% for csv_file in csv_files %}
+                    <option value="{{ csv_file }}">{{ csv_file }}</option>
                 {% endfor %}
             </select>
-        </form>
+            <button id="saveBtn" style="font-size: 16px; padding: 10px 20px; margin-top: 20px;
+                                background-color: green; color: white; border: none; cursor: pointer;">Save</button>
+            <button id="deleteBtn" style="font-size: 16px; padding: 10px 20px; margin-top: 10px; 
+                                background-color: red; color: white; border: none; cursor: pointer;">Delete</button>
+        </div>
 
-        <!-- Form to create a new CSV file -->
-        <form method="POST" action="/create_file">
-            <label for="new_file_name">Enter new file name:</label>
-            <input type="text" id="new_file_name" name="file_name" style="font-size: 15px;" required placeholder="Enter filename with extension">
-            <button type="submit" class="create-button">Create File</button>
-        </form>
-    </div>
+        <textarea name="csv_file_content" 
+                placeholder="File is empty now" 
+                cols="22" rows="15" 
+                style="font-size: 16px; margin-left: 30px;"></textarea>
 
-    <div class="display_csv_content" style="margin-bottom: 10px;">
-        <!-- Text area for displaying and modifying CSV content -->
-        <textarea id="csv_edit_text" name="csv_edit_text" rows="20" cols="20" style="font-size: 13px;">{{ csv_content or '' }}</textarea>
-        <b id="notify_csv_interact" style="font-size: 30px;">{{ notify_interact_text or '' }} </b>
+        <div style="display: flex; flex-direction: column; margin-left: 150px;">
+            <input type="text" name="new_file_name" placeholder="Enter filename" 
+            style="font-size: 16px;">
 
-        <form method="POST" action="/discard_video">
-            <input type="hidden" name="file_name" value="{{ selected_csv_file }}">
-            <label for="discard_videos">Enter discarded videos:</label>
-            <textarea id="discard_videos" name="discard_videos" rows="10" cols="20" style="font-size: 13px;">{{ discard_video or '' }}</textarea>
-            <button type="submit" style="background-color:red; color:white; cursor: pointer;">Discard</button>
-
-            <input type="hidden" name="csv_edit_text" value="{{ csv_content or '' }}">
-            <input type="hidden" name="file_name" value="{{ selected_csv_file }}">
-            <input type="hidden" name="user_text" value="{{ user_text or '' }}">
-            <input type="hidden" name="inputText" value="{{ user_text or '' }}">
-            <input type="hidden" name="bias" value="{{ bias or 100 }}">
-            <input type="hidden" name="no_images" style="font-size: 15px;" value="{{ no_images or 100 }}">
-        </form>
-    </div>
-
-    <div class ="save_and_delete_button">
-        <form method="POST" action="/delete_csv">
-            <input type="hidden" name="file_name" value="{{ selected_csv_file }}">
-            <button type="submit" style="background-color:red; color:white; cursor: pointer;">Delete</button>
-        </form>
-
-        <form method="POST" action="/save_csv" onsubmit="document.getElementById('hidden_csv_edit_text').value = document.getElementById('csv_edit_text').value;">
-            <input type="hidden" id="hidden_csv_edit_text" name="csv_edit_text" value="">
-            <input type="hidden" name="file_name" value="{{ selected_csv_file }}">
-            <!-- Save button to save CSV content -->
-            <button type="submit" style="background-color:green; color:white; cursor: pointer;">Save</button>
-        </form>
-
-        <form method="POST" action="/write_selected_imgs_to_file">
-            <input type="hidden" name="file_name" value="{{ selected_csv_file }}">
-            <button type="submit" style="background-color:blue; color:white; cursor: pointer;">Write selected images to file</button>
-            <input type="hidden" name="csv_edit_text" value="{{ csv_content or '' }}">
-            <input type="hidden" name="file_name" value="{{ selected_csv_file }}">
-            <input type="hidden" name="user_text" value="{{ user_text or '' }}">
-            <input type="hidden" name="inputText" value="{{ user_text or '' }}">
-            <input type="hidden" name="bias" value="{{ bias or 100 }}">
-            <input type="hidden" name="no_images" style="font-size: 15px;" value="{{ no_images or 100 }}">
-        </form>
-    </div>
-
-    <h2>See pre and post</h2>
-    <form method="POST" action="/see_pre_and_post">
-        <label for="video_name">Enter video:</label>
-        <input type="text" name="video_name" value="{{ video_name or '' }}">
-        <label for="frame_id">Enter frame_id:</label>
-        <input type="text" name="frame_id" value="{{ frame_id or '' }}">
-        <button type="submit" style="background-color:green; color:white; cursor: pointer;">See</button>
-
-        <p>{{ processed_text_pre_and_post | safe }}</p>
-
-        <input type="hidden" name="file_name" value="{{ selected_csv_file }}">
-        <input type="hidden" name="csv_edit_text" value="{{ csv_content or '' }}">
-        <input type="hidden" name="file_name" value="{{ selected_csv_file }}">
-        <input type="hidden" name="user_text" value="{{ user_text or '' }}">
-        <input type="hidden" name="inputText" value="{{ user_text or '' }}">
-        <input type="hidden" name="bias" value="{{ bias or 100 }}">
-        <input type="hidden" name="no_images" style="font-size: 15px;" value="{{ no_images or 100 }}">
-    </form>
-
-    <h1>Search by Text</h1>
-    <div class="search_by_text_container">
-        <!-- Form for inputting large text -->
-        <form method="POST" action="/submit_text">
-            <label for="inputText">Enter text:</label>
-            <br>
-            <textarea id="inputText" name="inputText" rows="8" cols="60" style="font-size: 18px;">{{ user_text or '' }}</textarea>
-            <br>
-            <input type="hidden" name="csv_edit_text" value="{{ csv_content or '' }}">
-            <input type="hidden" name="file_name" value="{{ selected_csv_file }}">
-            <input type="hidden" name="user_text" value="{{ user_text or '' }}">
-
-            <label for="output_file">Output file:</label>
-            <input type="text" id="output_file" name="output_file" style="font-size: 15px;" required placeholder="Enter filename with extension" value="{{ output_file or '' }}">
-
-            <!-- Submit and Clear buttons -->
-            <button type="button" onclick="clearText()">Clear</button>
-            <button type="submit" style="background-color:green; color:white; cursor: pointer;">Search</button>
-
-            <br>
-            <label for="no_images">Number of images:</label>
-            <input type="text" id="no_images" name="no_images" style="font-size: 15px;" value="{{ no_images or 100 }}">
-            <br>
-            <label for="bias">Bias: </label>
-            <select id="bias" name="bias">
-                <option value="100">100</option>
-                <option value="150">150</option>
-                <option value="200">200</option>
-                <option value="250">250</option>
-                <option value="300">300</option>
-                <option value="450">450</option>
-                <option value="500">500</option>
-            </select>
-        </form>
-
-        <!-- "You entered" text displayed next to the inputText field -->
-        <div class="notify_submit_text">
-            {% if notify_submit_text %}
-                <h2>You entered:</h2>
-                <p>{{ notify_submit_text }}</p>
-            {% endif %}
+            <button id="createBtn" style="font-size: 16px; padding: 10px 20px; margin-top: 10px; 
+                                background-color: blue; color: white; border: none; cursor: pointer;">Create new file</button>
         </div>
     </div>
-
-    <!-- Additional output section below the input field for processed text -->
-    <div class="processed-output">
-        <p>{{ processed_text | safe }}</p>
-    </div>
+    <script src="{{ url_for('static', filename='interact_with_csv_files.js') }}"></script>
 </body>
 </html>
