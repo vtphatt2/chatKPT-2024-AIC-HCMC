@@ -4,6 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>chatKPT - Web UI</title>
+    <script>
+        // Save the scroll position before leaving the page or navigating away
+        window.addEventListener('beforeunload', function() {
+            localStorage.setItem('scrollPosition', window.scrollY);
+        });
+    
+        // Restore the scroll position when the page is loaded
+        window.addEventListener('load', function() {
+            const scrollPosition = localStorage.getItem('scrollPosition');
+            if (scrollPosition) {
+                window.scrollTo(0, scrollPosition);
+                localStorage.removeItem('scrollPosition');  // Optional: Remove after restoring to avoid issues with subsequent loads
+            }
+        });
+    </script>
 </head>
 <body>
     <h1 style="text-align: center;">Welcome to chatKPT's Keyframes Search System</h1>
@@ -39,5 +54,87 @@
         </div>
     </div>
     <script src="{{ url_for('static', filename='interact_with_csv_files.js') }}"></script>
+
+    <!-- Radio buttons for search modes -->
+    <div style="text-align: center; margin-top: 20px; margin-bottom: 15px;">
+        <h2>Select Search Mode</h2>
+        <div style="display: inline-block;">
+            <label for="searchText">
+                <input type="radio" id="searchText" name="searchMode" value="text" checked>
+                Search by text
+            </label>
+        </div>
+        <div style="display: inline-block; margin-left: 40px;">
+            <label for="temporalSearch">
+                <input type="radio" id="temporalSearch" name="searchMode" value="temporal">
+                Temporal search
+            </label>
+        </div>
+        <div style="display: inline-block; margin-left: 40px;">
+            <label for="textAndSketch">
+                <input type="radio" id="textAndSketch" name="searchMode" value="textAndSketch">
+                Search by text and sketch
+            </label>
+        </div>
+    </div>
+
+    <!-- Content areas that will be shown/hidden based on radio selection -->
+    <div id="textSearchArea" style="display: none; margin-left: 15px;">
+        <div id="textSearchArea" style="display: flex; align-items: center; margin-left: 15px; gap: 30px;">
+            <textarea id="searchTextArea" placeholder="Enter search text" cols="60" rows="15" 
+                      style="font-size: 18px;"></textarea>
+            
+            <i id="translated_text_for_search_by_text" style="display: block; font-size: 18px; margin-left: 15px; max-width: 550px; word-wrap: break-word;"></i>
+        </div>        
+        <button id="clearBtn1" style="font-size: 16px; padding: 10px 20px; margin-top: 10px; margin-left: 15px; 
+                background-color: red; color: white; border: none; cursor: pointer;" 
+                onclick="clearText()">Clear</button>
+        <button id="searchBtn1" style="font-size: 16px; padding: 10px 20px; margin-top: 10px; 
+                background-color: green; color: white; border: none; cursor: pointer;"
+                onclick="sendSearchText()">Search</button>
+    </div>
+    
+    <div id="temporalSearchArea" style="display: none; display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 10px;">
+        <!-- Container for the two textareas, side by side -->
+        <div style="display: flex; gap: 40px;">
+            <textarea id="text_first_this_area" placeholder="First this..." cols="50" rows="15" 
+                      style="font-size: 18px;"></textarea>
+            <textarea id="text_then_that_area" placeholder="Then that..." cols="50" rows="15" 
+                      style="font-size: 18px;"></textarea>
+        </div>
+        
+        <div style="display: flex; gap: 20px;">
+            <button id="clearBtn2" style="font-size: 16px; padding: 10px 20px; 
+                    background-color: red; color: white; border: none; cursor: pointer;" 
+                    onclick="clearText()">Clear</button>
+            <button id="searchBtn2" style="font-size: 16px; padding: 10px 20px; 
+                    background-color: green; color: white; border: none; cursor: pointer;"
+                    onclick="sendSearchText()">Search</button>
+        </div>
+    </div>
+    
+
+    <div id="textAndSketchArea" style="display: none; display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 20px;">
+        <!-- Container for the textarea and canvas, side by side -->
+        <div style="display: flex; gap: 40px;">
+            <textarea placeholder="Enter search text" cols="60" rows="15" 
+                      style="font-size: 18px;"></textarea>
+            <canvas id="drawingCanvas" width="480" height="300"></canvas> 
+        </div>
+        
+        <!-- Container for the buttons, centered beneath the textarea and canvas -->
+        <div style="display: flex; gap: 20px;">
+            <button id="searchBtn3" style="font-size: 16px; padding: 10px 20px; 
+                    background-color: green; color: white; border: none; cursor: pointer;"
+                    onclick="sendSearchText()">Search</button>
+            <button id="clearBtn3" style="font-size: 16px; padding: 10px 20px; 
+                    background-color: red; color: white; border: none; cursor: pointer;" 
+                    onclick="clearCanvas()">Clear sketch</button>
+        </div>
+    </div>
+
+    <!-- Link to the external JavaScript file -->
+    <script src="{{ url_for('static', filename='search_mode.js') }}"></script>
+    <script src="static/canvasDrawing.js"></script>
 </body>
 </html>
