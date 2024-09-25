@@ -60,7 +60,7 @@ function searchByText() {
     searchBtn.style.opacity = "0.6"; // Thay đổi độ mờ để thể hiện nút đã bị vô hiệu hóa
 
     // Hiển thị thông báo "Đang xử lý..." và spinner
-    translatedTextElement.innerText = "Đợi chị xíu nhe mấy cưng...";
+    translatedTextElement.innerText = "Processing search by Text...";
     if (loadingSpinner) {
         loadingSpinner.style.display = "inline-block"; // Hiển thị spinner nếu có
     }
