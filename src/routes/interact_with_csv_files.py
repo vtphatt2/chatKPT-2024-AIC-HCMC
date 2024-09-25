@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, jsonify
+from flask import Blueprint, render_template, request, jsonify, send_file
 import re
 import os
 
@@ -100,3 +100,10 @@ def create_csv():
         except Exception as e:
             return jsonify({"error": str(e)}), 500
 
+@csv_routes.route('/image/<path:filepath>')
+def serve_image(filepath):
+    filepath = '/' + filepath  # Add the leading slash back
+    if os.path.exists(filepath):
+        return send_file(filepath)
+    else:
+        return "Image not found", 404

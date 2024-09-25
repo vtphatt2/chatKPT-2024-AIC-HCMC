@@ -20,6 +20,15 @@ class Dataset:
     def get_fiftyone_dataset(self):
         return self.dataset
     
+    def get_image_samples(self):
+        return self.image_samples
+    
+    def get_image_clip14_embeddings(self):
+        return self.image_clip14_embeddings
+    
+    def get_image_task_former_embeddings(self):
+        return self.image_task_former_embeddings
+    
     def load_metadata(self):
         self.image_samples = []
         image_clip14_embedding = []

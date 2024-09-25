@@ -4,21 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>chatKPT - Web UI</title>
-    <script>
-        // Save the scroll position before leaving the page or navigating away
-        window.addEventListener('beforeunload', function() {
-            localStorage.setItem('scrollPosition', window.scrollY);
-        });
-    
-        // Restore the scroll position when the page is loaded
-        window.addEventListener('load', function() {
-            const scrollPosition = localStorage.getItem('scrollPosition');
-            if (scrollPosition) {
-                window.scrollTo(0, scrollPosition);
-                localStorage.removeItem('scrollPosition');  // Optional: Remove after restoring to avoid issues with subsequent loads
-            }
-        });
-    </script>
+    <script src="{{ url_for('static', filename='reload.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
     <h1 style="text-align: center;">Welcome to chatKPT's Keyframes Search System</h1>
@@ -91,7 +78,7 @@
                 onclick="clearText()">Clear</button>
         <button id="searchBtn1" style="font-size: 16px; padding: 10px 20px; margin-top: 10px; 
                 background-color: green; color: white; border: none; cursor: pointer;"
-                onclick="sendSearchText()">Search</button>
+                onclick="searchByText()">Search</button>
     </div>
     
     <div id="temporalSearchArea" style="display: none; display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 10px;">
@@ -109,7 +96,7 @@
                     onclick="clearText()">Clear</button>
             <button id="searchBtn2" style="font-size: 16px; padding: 10px 20px; 
                     background-color: green; color: white; border: none; cursor: pointer;"
-                    onclick="sendSearchText()">Search</button>
+                    onclick="searchByText()">Search</button>
         </div>
     </div>
     
@@ -126,7 +113,7 @@
         <div style="display: flex; gap: 20px;">
             <button id="searchBtn3" style="font-size: 16px; padding: 10px 20px; 
                     background-color: green; color: white; border: none; cursor: pointer;"
-                    onclick="sendSearchText()">Search</button>
+                    onclick="searchByText()">Search</button>
             <button id="clearBtn3" style="font-size: 16px; padding: 10px 20px; 
                     background-color: red; color: white; border: none; cursor: pointer;" 
                     onclick="clearCanvas()">Clear sketch</button>
@@ -135,8 +122,12 @@
 
     <!-- Link to the external JavaScript file -->
     <script src="{{ url_for('static', filename='search_mode.js') }}"></script>
-    <script src="static/canvasDrawing.js"></script>
+    <script src="{{ url_for('static', filename='canvasDrawing.js') }}"></script>
+    <script src="{{ url_for('static', filename='zoom.js') }}"></script>
 
     <h2 style="text-align: center; margin-top: 5px;">Search Result</h2>
+    <div id="search-result" style="margin-top: 30px;"></div>
+
+    <div id="background-overlay" class="dark-background" style="display:none;" onclick="toggleZoom()"></div>
 </body>
 </html>
