@@ -77,3 +77,116 @@ function clearSearchData() {
         searchTextArea.value = "";
     }
 }
+
+document.addEventListener('DOMContentLoaded', function () {
+    restoreSearchMode();
+    restoreSearchData();
+    restoreScrollPosition();
+});
+
+function restoreSearchMode() {
+    const savedMode = localStorage.getItem('selectedSearchMode');
+    if (savedMode) {
+        document.getElementById(savedMode).checked = true;
+        toggleSearchArea(); // Update the UI based on the saved selection
+    }
+}
+
+function restoreSearchData() {
+    const selectedMode = localStorage.getItem('selectedSearchMode');
+
+    if (selectedMode === 'searchText') {
+        const lastSearchJSON = localStorage.getItem('lastSearch');
+        if (lastSearchJSON) {
+            const lastSearch = JSON.parse(lastSearchJSON);
+            document.getElementById("translated_text_for_search_by_text").innerText = lastSearch.translated_text;
+            document.getElementById('searchTextArea').value = lastSearch.searchText;
+
+            // Restore search results
+            restoreSearchResults(lastSearch.submission_list);
+        }
+    } else if (selectedMode === 'temporalSearch') {
+        const lastTemporalSearchJSON = localStorage.getItem('lastTemporalSearch');
+        if (lastTemporalSearchJSON) {
+            const lastTemporalSearch = JSON.parse(lastTemporalSearchJSON);
+            document.getElementById("translated_text_for_temporal_search").innerText = 
+                `Translated First This: ${lastTemporalSearch.translated_first_this}\n` +
+                `Translated Then That: ${lastTemporalSearch.translated_then_that}`;
+            document.getElementById('text_first_this_area').value = lastTemporalSearch.textFirstThis;
+            document.getElementById('text_then_that_area').value = lastTemporalSearch.textThenThat;
+
+            // Restore search results
+            restoreSearchResults(lastTemporalSearch.submission_list);
+        }
+    }
+    // Add similar blocks for other search modes like 'textAndSketch' if needed
+}
+
+function restoreSearchResults(submissionList) {
+    const searchResultContainer = document.getElementById('search-result');
+    searchResultContainer.innerHTML = ''; // Clear previous search result
+
+    submissionList.forEach(([videoName, images], groupIndex) => {
+        // Create a container for each video section
+        const videoSection = document.createElement('div');
+        videoSection.classList.add('video-section');
+
+        // Create the video header (displayed on the left side)
+        const videoHeader = document.createElement('div');
+        videoHeader.classList.add('video-header');
+        videoHeader.innerText = `Video: ${videoName}`;
+        videoSection.appendChild(videoHeader);
+
+        // Create the scrollable container for images (displayed next to the header)
+        const scrollContainer = document.createElement('div');
+        scrollContainer.classList.add('scroll-container');
+
+        // Loop through the images and add them to the scroll container
+        images.forEach(([imagePath, frameId], index) => {
+            const imageItem = document.createElement('div');
+            imageItem.classList.add('image-item');
+
+            const imgElement = document.createElement('img');
+            imgElement.src = `/image/${imagePath.substring(1)}`;  // Serve the image via the /image/<path>
+            imgElement.alt = `Frame ${frameId}`;
+            imgElement.style.width = '150px';  // Set initial width
+            imgElement.style.height = 'auto';   // Set initial height
+            imgElement.onclick = function() { toggleZoom(imgElement); };
+
+            const caption = document.createElement('div');
+            caption.classList.add('image-caption');
+            caption.innerText = `Frame ID: ${frameId}`;
+
+            imageItem.appendChild(imgElement);
+            imageItem.appendChild(caption);
+            scrollContainer.appendChild(imageItem);
+        });
+
+        videoSection.appendChild(scrollContainer);
+        searchResultContainer.appendChild(videoSection);
+    });
+}
+
+function restoreScrollPosition() {
+    const scrollPosition = localStorage.getItem('scrollPosition');
+    if (scrollPosition) {
+        window.scrollTo(0, parseInt(scrollPosition, 10));
+    }
+}
+
+function clearSearchData() {
+    localStorage.removeItem('lastSearch');
+    localStorage.removeItem('lastTemporalSearch');
+    const searchResultContainer = document.getElementById('search-result');
+    searchResultContainer.innerHTML = '';
+    const translatedTextElement1 = document.getElementById("translated_text_for_search_by_text");
+    const translatedTextElement2 = document.getElementById("translated_text_for_temporal_search");
+    if (translatedTextElement1) translatedTextElement1.innerText = "";
+    if (translatedTextElement2) translatedTextElement2.innerText = "";
+    const searchTextArea = document.getElementById('searchTextArea');
+    const textFirstThisArea = document.getElementById('text_first_this_area');
+    const textThenThatArea = document.getElementById('text_then_that_area');
+    if (searchTextArea) searchTextArea.value = "";
+    if (textFirstThisArea) textFirstThisArea.value = "";
+    if (textThenThatArea) textThenThatArea.value = "";
+}

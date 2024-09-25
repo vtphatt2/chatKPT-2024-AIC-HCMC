@@ -1,4 +1,3 @@
-// Get radio buttons and areas
 const searchText = document.getElementById('searchText');
 const temporalSearch = document.getElementById('temporalSearch');
 const textAndSketch = document.getElementById('textAndSketch');
@@ -21,7 +20,7 @@ function toggleSearchArea() {
         textAndSketchArea.style.display = 'flex';
     }
 
-    // Save the selected radio button to localStorage
+    // Save the selected radio button to localStorage without clearing it
     localStorage.setItem('selectedSearchMode', document.querySelector('input[name="searchMode"]:checked').id);
 }
 
@@ -143,14 +142,13 @@ function searchByText() {
             searchResultContainer.appendChild(videoSection);
         });
 
-
         searchBtn.disabled = false;
         searchBtn.style.cursor = "pointer";
         searchBtn.style.opacity = "1"; 
     })
     .catch(error => {
         console.error('Error:', error);
-        translatedTextElement.innerText = "Đã xảy ra lỗi trong quá trình dịch tìm kiếm."; 
+        translatedTextElement.innerText = "An error occurred while translating the text."; 
         if (loadingSpinner) {
             loadingSpinner.style.display = "none"; 
         }

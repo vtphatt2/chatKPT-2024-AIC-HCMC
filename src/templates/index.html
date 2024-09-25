@@ -6,6 +6,7 @@
     <title>chatKPT - Web UI</title>
     <script src="{{ url_for('static', filename='reload.js') }}"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="{{ url_for('static', filename='temporal_search.js') }}"></script>
 </head>
 <body>
     <h1 style="text-align: center;">Welcome to chatKPT's Keyframes Search System</h1>
@@ -67,10 +68,9 @@
 
     <!-- Content areas that will be shown/hidden based on radio selection -->
     <div id="textSearchArea" style="display: none; margin-left: 15px;">
-        <div id="textSearchArea" style="display: flex; align-items: center; margin-left: 15px; gap: 30px;">
+        <div style="display: flex; align-items: center; margin-left: 15px; gap: 30px;">
             <textarea id="searchTextArea" placeholder="Enter search text" cols="60" rows="15" 
                       style="font-size: 18px;"></textarea>
-            
             <i id="translated_text_for_search_by_text" style="display: block; font-size: 18px; margin-left: 15px; max-width: 550px; word-wrap: break-word;"></i>
         </div>        
         <button id="clearBtn1" style="font-size: 16px; padding: 10px 20px; margin-top: 10px; margin-left: 15px; 
@@ -82,7 +82,6 @@
     </div>
     
     <div id="temporalSearchArea" style="display: none; display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 10px;">
-        <!-- Container for the two textareas, side by side -->
         <div style="display: flex; gap: 40px;">
             <textarea id="text_first_this_area" placeholder="First this..." cols="50" rows="15" 
                       style="font-size: 18px;"></textarea>
@@ -96,11 +95,14 @@
                     onclick="clearText()">Clear</button>
             <button id="searchBtn2" style="font-size: 16px; padding: 10px 20px; 
                     background-color: green; color: white; border: none; cursor: pointer;"
-                    onclick="searchByText()">Search</button>
+                    onclick="performTemporalSearch()">Search</button>
+        </div>
+
+        <div style="width: 100%; text-align: left; margin-left: 100px;">
+            <i id="translated_text_for_temporal_search" style="display: block; font-size: 18px; max-width: 550px; word-wrap: break-word;"></i>
         </div>
     </div>
     
-
     <div id="textAndSketchArea" style="display: none; display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 20px;">
         <!-- Container for the textarea and canvas, side by side -->
         <div style="display: flex; gap: 40px;">
