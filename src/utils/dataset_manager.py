@@ -17,6 +17,8 @@ class Dataset:
             recursive=True
         )
 
+        self.video_range = {}
+
     def get_fiftyone_dataset(self):
         return self.dataset
     
@@ -28,6 +30,9 @@ class Dataset:
     
     def get_image_task_former_embeddings(self):
         return self.image_task_former_embeddings
+    
+    def get_video_range(self):
+        return self.video_range
     
     def load_metadata(self):
         self.image_samples = []
@@ -91,6 +96,7 @@ class Dataset:
                 print(f"\r\t{video} is ready...", end='', flush=True)
 
         print("\n4. Load frame_id, clip-14, task-former")
+        tmp_name = ""
         for sample in self.dataset:            
             sample['frame_id'] = video_frameid_dict[sample['video']].iloc[int(sample['keyframe_id']) - 1]
             sample['clip-14'] = embedding_clip14_dict[sample['video']][sample['keyframe_id']]
@@ -100,6 +106,13 @@ class Dataset:
             self.image_samples.append(sample)
             image_clip14_embedding.append(sample['clip-14']) 
             image_task_former_embedding.append(sample['task-former'])
+
+            if (sample['video'] not in self.video_range):
+                n = len(self.image_samples)
+                self.video_range[sample['video']] = [n - 1, len(self.dataset) - 1]
+                if self.image_samples[n - 1]['video'] != self.image_samples[n - 2]['video']:
+                    self.video_range[tmp_name][1] = n - 2
+                tmp_name = sample['video']
 
             print(f"\r\t{sample['video']} is done...", end='', flush=True)
         
