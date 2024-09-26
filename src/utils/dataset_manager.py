@@ -1,120 +1,40 @@
-import fiftyone as fo
-import os
 from glob import glob
-import pandas as pd
+import os
 import numpy as np
-import tqdm
+from utils.SampleImage import SampleImage
 
 class Dataset:
-    def __init__(self, dataset_name, data_dir):
-        self.data_dir = data_dir
+    def __init__(self, data_dir):
+        self.dataset = {}
 
-        if fo.dataset_exists(dataset_name):
-            fo.delete_dataset(dataset_name)
-        self.dataset = fo.Dataset.from_images_dir(
-            name=dataset_name, 
-            images_dir=data_dir, 
-            recursive=True
-        )
+        self.video_clip14_embedding_dict = {}
+        self.video_task_former_embedding_dict = {}
 
-        self.video_range = {}
+        for batch in ['batch1', 'batch2', 'batch3']:
+            clip14_paths = glob(os.path.join(data_dir, batch, 'clip-features-14', '*.npy'))
+            clip14_paths.sort()
 
-    def get_fiftyone_dataset(self):
+            for clip14_path in clip14_paths:
+                video_name = clip14_path[:-4].rsplit(os.sep, 1)[-1]
+                task_former_path = os.path.join(data_dir, batch, 'task-former', f'{video_name}.npy')
+                self.dataset[video_name] = []
+
+                self.video_clip14_embedding_dict[video_name] = np.load(clip14_path)
+                self.video_task_former_embedding_dict[video_name] = np.load(task_former_path)
+
+                L = video_name[:3]
+                keyframes_paths = glob(os.path.join(data_dir, batch, "keyframes", f"keyframes_{L}", video_name, "*.jpg"))
+                keyframes_paths.sort()
+
+                for i in range(0, len(keyframes_paths)):
+                    self.dataset[video_name].append(SampleImage(keyframes_paths[i]))
+                
+    def get_dataset(self):
         return self.dataset
-    
-    def get_image_samples(self):
-        return self.image_samples
-    
-    def get_image_clip14_embeddings(self):
-        return self.image_clip14_embeddings
-    
-    def get_image_task_former_embeddings(self):
-        return self.image_task_former_embeddings
-    
-    def get_video_range(self):
-        return self.video_range
-    
-    def load_metadata(self):
-        self.image_samples = []
-        image_clip14_embedding = []
-        image_task_former_embedding = []
 
-        unique_videos = set()
-        print("\n1. Load video name and keyframe_id...")
-        for sample in self.dataset:
-            tmp, sample['video'], sample['keyframe_id'] = sample['filepath'][:-4].rsplit(os.sep, 2)
-            sample['batch'] = tmp.rsplit(os.sep, 4)[-3]
-            unique_videos.add(sample['video'])
-            sample.save()
-            print(f"\r\t{sample['video']} with keyframe {sample['keyframe_id']} -- Finish", 
-                  end='', flush=True)
+    def get_video_clip14_embedding_dict(self):
+        return self.video_clip14_embedding_dict
 
-        print("\n2. Set up frame idx")
-        video_keyframe_dict = {}
-        all_keyframe_paths = glob(os.path.join(self.data_dir, 'batch*', 'keyframes',
-                                                '*', '*', '*.jpg'))
-        video_frameid_dict = {}
-        for b in [1, 2, 3]:
-            for video in unique_videos:
-                filepath = os.path.join(self.data_dir, f'batch{b}', 'map-keyframes', f'{video}.csv')
-                if os.path.exists(filepath):
-                    a = pd.read_csv(filepath)
-                    video_frameid_dict[video] = a['frame_idx']
-                    print(f"\r\t{video} is ready...", end='', flush=True)
-
-        for kf in all_keyframe_paths:
-            _, vid, kf = kf[:-4].rsplit(os.sep, 2)
-            if vid not in video_keyframe_dict.keys():
-                video_keyframe_dict[vid] = [kf]
-            else:
-                video_keyframe_dict[vid].append(kf)
-
-        for k, v in video_keyframe_dict.items():
-            video_keyframe_dict[k] = sorted(v)        
-
-        print("\n3. Set up clip_14_dict and task_former_dict")
-        embedding_clip14_dict = {}
-        embedding_task_former_dict = {}
-        for j in [1, 2, 3]:
-            for video in unique_videos:
-                clip14_path = os.path.join(self.data_dir, f'batch{j}', 
-                                        'clip-features-14', f'{video}.npy')
-                if os.path.exists(clip14_path):
-                    a = np.load(clip14_path)
-                    embedding_clip14_dict[video] = {}
-                    for i, k in enumerate(video_keyframe_dict[video]):
-                        embedding_clip14_dict[video][k] = a[i]
-
-                task_former_path = os.path.join(self.data_dir, f'batch{j}', 
-                            'task-former', f'{video}.npy')
-                if os.path.exists(task_former_path):
-                    b = np.load(task_former_path)
-                    embedding_task_former_dict[video] = {}
-                    for i, k in enumerate(video_keyframe_dict[video]):
-                        embedding_task_former_dict[video][k] = b[i]
-
-                print(f"\r\t{video} is ready...", end='', flush=True)
-
-        print("\n4. Load frame_id, clip-14, task-former")
-        tmp_name = ""
-        for sample in self.dataset:            
-            sample['frame_id'] = video_frameid_dict[sample['video']].iloc[int(sample['keyframe_id']) - 1]
-            sample['clip-14'] = embedding_clip14_dict[sample['video']][sample['keyframe_id']]
-            sample['task-former'] = embedding_task_former_dict[sample['video']][sample['keyframe_id']]
-            sample.save()
-
-            self.image_samples.append(sample)
-            image_clip14_embedding.append(sample['clip-14']) 
-            image_task_former_embedding.append(sample['task-former'])
-
-            if (sample['video'] not in self.video_range):
-                n = len(self.image_samples)
-                self.video_range[sample['video']] = [n - 1, len(self.dataset) - 1]
-                if self.image_samples[n - 1]['video'] != self.image_samples[n - 2]['video']:
-                    self.video_range[tmp_name][1] = n - 2
-                tmp_name = sample['video']
-
-            print(f"\r\t{sample['video']} is done...", end='', flush=True)
-        
-        self.image_clip14_embeddings = np.array(image_clip14_embedding)
-        self.image_task_former_embeddings = np.array(image_task_former_embedding)
+    def get_video_task_former_embedding_dict(self):
+        return self.video_task_former_embedding_dict
+                                  
