@@ -15,7 +15,7 @@
 
 .scroll-container {
     display: flex;
-    gap: 20px; /* Adjust the gap between the image items */
+    gap: -100px; /* Adjust the gap between the image items */
     overflow-x: auto; /* Allow horizontal scrolling */
     white-space: nowrap; /* Prevent wrapping of items */
 }
