@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
+# In[25]:
 
 
 import fiftyone as fo
@@ -20,6 +20,7 @@ import sys
 sys.path.append('task-former/code')
 from clip.model import convert_weights, CLIP    
 from clip.clip import _transform, load, tokenize
+from collections import Counter
 
 
 # In[2]:
@@ -28,13 +29,16 @@ from clip.clip import _transform, load, tokenize
 # run in about 15 seconds
 if fo.dataset_exists("AIC_2024"):
     fo.delete_dataset("AIC_2024")
+
 batch_dirs = glob(os.path.join("..", "data", "batch*", "keyframes"))
+    
 dataset = fo.Dataset(name="AIC_2024")
+
 for batch_dir in batch_dirs:
     dataset.add_images_dir(batch_dir, recursive=True)
 
 
-# In[4]:
+# In[3]:
 
 
 # run in about 36 seconds
@@ -46,22 +50,25 @@ for sample in dataset:
     sample.save()
 
 
-# In[5]:
+# In[ ]:
 
 
 # # object detection
 # for sample in dataset:
-#     object_path = glob(os.path.join("..", "data", "batch*", "object", sample['video'], sample['keyframe_id'] + ".json"))
+#     object_paths = glob(os.path.join("..", "data", "batch*", "object", sample['video'], sample['keyframe_id'] + ".json"))
+
+#     if not object_paths:
+#         continue
+#     object_path = object_paths[0]
+    
 #     with open(object_path) as jsonfile:
 #         det_data = json.load(jsonfile)
+    
 #     detections = []
 #     for cls, box, score in zip(det_data['detection_class_entities'], det_data['detection_boxes'], det_data['detection_scores']):
-#         # convert to [top-left-x, top-left-y, width, height]
-#         box = [float(coord) for coord in box]  # Chuyển đổi các phần tử của box thành số thực
+#         box = [float(coord) for coord in box] 
 #         boxf = [box[1], box[0], box[3] - box[1], box[2] - box[0]]
 #         scoref = float(score)
-
-#         # Only add objects with confidence > 0.4
 #         if scoref > 0.4:
 #             detections.append(
 #                 fo.Detection(label=cls, 
@@ -73,7 +80,7 @@ for sample in dataset:
 #     sample.save()
 
 
-# In[5]:
+# In[50]:
 
 
 # run in nearly 40 seconds
@@ -91,7 +98,7 @@ for sample in dataset:
     sample.save()
 
 
-# In[6]:
+# In[51]:
 
 
 # run in about 1 minutes
@@ -125,13 +132,13 @@ for sample in dataset:
     sample.save()
 
 
-# In[7]:
+# In[6]:
 
 
 dataset.first()
 
 
-# In[7]:
+# In[52]:
 
 
 # run in 10 minutes
@@ -140,7 +147,7 @@ model = CLIPModel.from_pretrained("openai/clip-vit-large-patch14-336").to(device
 processor = CLIPProcessor.from_pretrained("openai/clip-vit-large-patch14-336")
 
 
-# In[8]:
+# In[53]:
 
 
 # run in 11 seconds
@@ -152,7 +159,7 @@ for sample in dataset:
 image_embeddings = np.array(image_embeddings)
 
 
-# In[9]:
+# In[54]:
 
 
 def submission(text_query, k, csv_file, Subquery=False):
@@ -181,13 +188,13 @@ def submission(text_query, k, csv_file, Subquery=False):
     return dataset_submission
 
 
-# In[10]:
+# In[63]:
 
 
-# text_query = "scene of a rescuer wearing a blue flashlight on his head rescuing a person buried underground."
+# text_query = "A scene of a person riding a horse running parallel to two people riding a motorbike in an open field."
 # output_file = "output.csv"
 
-# output_file = os.path.join('..', 'submission', output_file)
+# output_file = os.path.join('..', 'src', output_file)
 # dataset_submission = submission(text_query, 500, output_file)
 # session = fo.launch_app(dataset_submission, auto=False)
 # session.open_tab()
@@ -219,27 +226,19 @@ def organizeOutput(input_file, output_file):
         for rows in organized_data.values():
             writer.writerows(rows)
 
-organizeOutput('output.csv', 'output_organized.csv')
 
+# In[67]:
 
-# In[12]:
-
-
-import os
-import pandas as pd
 
 def calculate_keyframe_id(path):
     df = pd.read_csv(path, header=None, names=['video', 'frame_id'])
     keyframe_paths = []
-
     for index, row in df.iterrows():
         video = row['video']
         frame_id = row['frame_id']
-
         if video in video_frameid_dict and (video_frameid_dict[video] == frame_id).any():
             key_frame = video_frameid_dict[video][video_frameid_dict[video] == frame_id].index[0] + 1
             batch_dirs = glob(os.path.join("..", "data", "batch*", "keyframes"))
-
             for batch_dir in batch_dirs:
                 keyframe_path = os.path.join(
                     batch_dir,
@@ -260,15 +259,6 @@ def calculate_keyframe_id(path):
     return keyframe_paths
 
 
-# In[14]:
-
-
-# path_to_csv = os.path.join("..", "src", "output.csv")
-# keyframe_paths = calculate_keyframe_id(path_to_csv)
-# for path in keyframe_paths:
-#     print(path)
-
-
 # In[15]:
 
 
@@ -286,7 +276,7 @@ def loadKeyframes(image_path):
     return keyframe_paths
 
 
-# In[ ]:
+# In[16]:
 
 
 def getMajorInfo(path):
@@ -304,4 +294,86 @@ def getImageInformation(path):
     publish_date, watch_url = getMajorInfo(metadata_path)
   
     return publish_date, watch_url
+
+
+# In[66]:
+
+
+# find the object detection json files
+def findObjectPaths(image_result_path):
+    with open(image_result_path, 'r') as file:
+        image_paths = file.readlines()
+
+    def convert_to_object_path(image_path):
+        object_path = image_path.replace('keyframes', 'object')
+        object_path = os.path.splitext(object_path)[0] + '.json'
+        parts = object_path.split(os.sep)
+        if 'object' in parts:
+            index = parts.index('object')
+            if index + 1 < len(parts):
+                parts.pop(index + 1)
+        object_path = os.sep.join(parts)
+        return object_path
+    
+    object_paths = [convert_to_object_path(image_path.strip()) for image_path in image_paths]
+    matched_files = []
+    for object_path in object_paths:
+        matched_files.extend(glob(object_path))
+    
+    return matched_files
+
+# get top objects
+def getTopObjects(json_file_path, top_k):
+    with open(json_file_path, 'r') as file:
+        data = json.load(file)
+    
+    # Get top k objects
+    scores = list(map(float, data['detection_scores']))
+    entities = data['detection_class_entities']
+    score_entity_pairs = list(zip(scores, entities))
+    score_entity_pairs.sort(reverse=True, key=lambda x: x[0])
+    seen_entities = set()
+    top_entities = []
+    for score, entity in score_entity_pairs:
+        if entity not in seen_entities:
+            seen_entities.add(entity)
+            top_entities.append(entity)
+        if len(top_entities) == top_k:
+            break
+    
+    # Save to CSV
+    output_csv_path = os.path.abspath(os.path.join('..', 'src', 'top_objects.csv'))
+    os.makedirs(os.path.dirname(output_csv_path), exist_ok=True)
+    df = pd.DataFrame({
+        'json_file_path': [json_file_path],
+        'top_entities': [', '.join(top_entities)]
+    })
+
+    if os.path.exists(output_csv_path):
+        df.to_csv(output_csv_path, mode='a', header=False, index=False)
+    else:
+        df.to_csv(output_csv_path, index=False)
+
+# get object insights
+def getObjectInsights(top_objects_csv_path, k):
+    df = pd.read_csv(top_objects_csv_path)
+    all_entities = []
+    for entities in df['top_entities']:
+        all_entities.extend(entities.split(', '))
+    
+    entity_counts = Counter(all_entities)
+    top_k_entities = entity_counts.most_common(k)
+    
+    return top_k_entities
+    
+# organize object data
+def organizeObjectData(image_result_path, k):
+    object_paths = findObjectPaths(image_result_path)
+    for object_path in object_paths:
+        getTopObjects(object_path, k)
+
+    top_objects_csv_path = os.path.join('..', 'src', 'top_objects.csv')
+    top_k_entities = getObjectInsights(top_objects_csv_path, k)
+    return top_k_entities
+
 
