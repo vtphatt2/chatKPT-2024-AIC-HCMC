@@ -31,7 +31,7 @@ function performTemporalSearch() {
 
         const submissionList = data.submission_list;
 
-        submissionList.forEach(([videoName, images], groupIndex) => {
+        submissionList.forEach(([videoName, video_link, images], groupIndex) => {
             // Create a container for each video section
             const videoSection = document.createElement('div');
             videoSection.classList.add('video-section');
@@ -41,6 +41,15 @@ function performTemporalSearch() {
             videoHeader.classList.add('video-header');
             videoHeader.innerText = `Video: ${videoName}`;
             videoSection.appendChild(videoHeader);
+
+            const videoLink = document.createElement('a');
+            videoLink.href = `${video_link}&t=${Math.floor(images[0][1] / 25)}s`;  // Set the link to point to the video
+            videoLink.innerText = "Watch full video";  // Text displayed for the link
+            videoLink.target = "_blank";  // Open link in a new tab
+            videoLink.style.textDecoration = "none";  // Remove underline
+            videoLink.style.color = "blue";  // Set text color (you can change it to any color you prefer)
+            videoLink.style.display = "block";  // Ensure the link appears beneath the video name
+            videoHeader.appendChild(videoLink); 
 
             // Create the scrollable container for images (displayed next to the header)
             const scrollContainer = document.createElement('div');
