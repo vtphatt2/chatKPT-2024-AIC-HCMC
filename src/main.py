@@ -13,7 +13,7 @@ data_dir = os.path.join(os.getcwd(), '..', 'data') # link to 'data' folder, reme
 dataset_manager = dataset_manager.Dataset(data_dir=data_dir)
 
 
-print("[3] Load models and translator")
+print("\n[3] Load models and translator")
 # clip vit large patch14 model
 model_clip14 = model_manager.CLIP_14_model()
 
