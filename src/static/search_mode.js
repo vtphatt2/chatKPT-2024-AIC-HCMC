@@ -129,7 +129,7 @@ function searchByText() {
                 const imgElement = document.createElement('img');
                 imgElement.src = `/image/${imagePath.substring(1)}`;  // Serve the image via the /image/<path>
                 imgElement.alt = `Frame ${frameId}`;
-                imgElement.style.width = '150px';  // Set initial width
+                imgElement.style.width = '300px';  // Set initial width
                 imgElement.style.height = 'auto';   // Set initial height
                 imgElement.onclick = function() { toggleZoom(imgElement); };
 
