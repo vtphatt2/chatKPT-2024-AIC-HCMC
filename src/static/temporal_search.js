@@ -4,6 +4,7 @@ function performTemporalSearch() {
     const textFirstThis = document.getElementById('text_first_this_area').value;
     const textThenThat = document.getElementById('text_then_that_area').value;
     const translatedFirstThisElement = document.getElementById("translated_text_for_temporal_search");
+    const discardedVideos = document.getElementById('discarded_videos').value;
 
     // Show loading state if needed
     translatedFirstThisElement.innerText = "Processing temporal search...";
@@ -15,7 +16,8 @@ function performTemporalSearch() {
         },
         body: JSON.stringify({ 
             textFirstThis: textFirstThis, 
-            textThenThat: textThenThat 
+            textThenThat: textThenThat,
+            discardedVideos: discardedVideos 
         })
     })
     .then(response => response.json())

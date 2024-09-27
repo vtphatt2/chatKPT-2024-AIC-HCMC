@@ -53,6 +53,7 @@ function searchByText() {
     const translatedTextElement = document.getElementById("translated_text_for_search_by_text");
     const loadingSpinner = document.getElementById("loadingSpinner");
     const searchBtn = document.getElementById("searchBtn1"); // Đảm bảo ID đúng với nút Search của bạn
+    const discardedVideos = document.getElementById('discarded_videos').value;
 
     // Vô hiệu hóa nút Search
     searchBtn.disabled = true;
@@ -70,7 +71,10 @@ function searchByText() {
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ searchText: searchText })
+        body: JSON.stringify({ 
+            searchText: searchText, 
+            discardedVideos: discardedVideos
+        })
     })
     .then(response => {
         if (!response.ok) {
