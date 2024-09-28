@@ -1,9 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[25]:
-
-
 import fiftyone as fo
 import os
 import pandas as pd
@@ -24,7 +18,6 @@ from collections import Counter
 
 
 # In[2]:
-
 
 # run in about 15 seconds
 if fo.dataset_exists("AIC_2024"):
@@ -279,6 +272,12 @@ def loadKeyframes(image_path):
 # In[16]:
 
 
+def frame_to_time(frame):
+    total_seconds = frame / 25
+    minutes = int(total_seconds // 60)
+    seconds = int(total_seconds % 60)
+    return f'{minutes:02}:{seconds:02}'
+
 def getMajorInfo(path):
     with open(path, 'r', encoding='utf-8') as file:
         data = json.load(file)
@@ -287,13 +286,31 @@ def getMajorInfo(path):
         return publish_date, watch_url
 
 def getImageInformation(path):
+    image_id = os.path.basename(path).replace('.jpg', '')
     base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(path))))
     video_id = os.path.basename(os.path.dirname(path))
     metadata_filename = f"{video_id}.json"
     metadata_path = os.path.join(base_dir, "metadata", metadata_filename)
+    csv_pattern = os.path.join(base_dir, "map-keyframes", f"{video_id}.csv")
+    csv_files = glob(csv_pattern)
+    csv_path = csv_files[0]
+
+    def get_frame_idx(csv_path, image_id):
+        with open(csv_path, 'r', encoding='utf-8') as file:
+            reader = csv.reader(file)
+            header = next(reader)  
+            for row in reader:
+                if row[0] == image_id:
+                    return row[1] 
+        return None
+
+    frame_idx = get_frame_idx(csv_path, image_id)
     publish_date, watch_url = getMajorInfo(metadata_path)
+    time_seconds = round(float(frame_idx)) - 1 
+    url = f"{watch_url}&t={time_seconds}"
   
-    return publish_date, watch_url
+    return publish_date, url
+
 
 
 # In[66]:
