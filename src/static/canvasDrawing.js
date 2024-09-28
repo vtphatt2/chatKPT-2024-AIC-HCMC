@@ -9,8 +9,15 @@ function drawBoundingLine() {
     context.strokeRect(0, 0, canvas.width, canvas.height);  // Draw the bounding rectangle
 }
 
-// Initialize canvas with bounding line
-drawBoundingLine();
+// Initialize canvas with white background and bounding line
+function initializeCanvas() {
+    // Fill the canvas with white color
+    context.fillStyle = 'white';  // Set the background color
+    context.fillRect(0, 0, canvas.width, canvas.height);  // Fill the canvas
+    drawBoundingLine();  // Draw the bounding line
+}
+
+initializeCanvas();
 
 // Start drawing when the mouse is pressed down
 canvas.addEventListener('mousedown', (event) => {
@@ -40,6 +47,6 @@ function clearCanvas() {
     // Clear the entire canvas
     context.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Redraw the bounding line
-    drawBoundingLine();
+    // Redraw the white background and bounding line
+    initializeCanvas();
 }

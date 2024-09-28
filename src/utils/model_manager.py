@@ -73,7 +73,6 @@ class TASK_former_model:
 
         return self.model.feature_fuse(sketch_feature, text_feature)        
     
-    def inference(self, text, sketch_path):
-        sketch = Image.open(sketch_path)
+    def inference(self, text, sketch):
         query_feat = self.get_feature(sketch, text).cpu().numpy().flatten()
         return query_feat
