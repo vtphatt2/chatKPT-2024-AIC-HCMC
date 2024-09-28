@@ -1,0 +1,1 @@
+Đoạn video có nhiều cây được trồng bên tường của một của hàng có bảng hiệu tiếng Trung. Những cái cây này được trồng trong những cái chậu làm bằng lốp (vỏ) xe. Hãy cho biết có thể thấy bao nhiêu vỏ xe được làm chậu đang có cây trồng trong khung cảnh này?

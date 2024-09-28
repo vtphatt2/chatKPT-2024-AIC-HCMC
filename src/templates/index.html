@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>chatKPT - Web UI</title>
+    <script src="{{ url_for('static', filename='reload.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="{{ url_for('static', filename='temporal_search.js') }}"></script>
+</head>
+<body>
+    <h1 style="text-align: center;">Welcome to chatKPT's Keyframes Search System</h1>
+    <p style="text-align: center;">This is the system developed by chatKPT for The 2024 AI Challenge Ho Chi Minh City</p>
+
+    <h2 style="margin-left: 80px;">CSV files content</h2>
+    <div style="display: flex; align-items: center;">
+        <div style="display: flex; flex-direction: column; margin-left: 20px;">
+            <select id="csvFiles" name="csvFiles" style="width: 200px; height: 100px; font-size: 30px; margin-left: 30px;">
+                <option value="None" selected disabled>None</option>
+                <!-- Loop through the list of CSV files and create option elements -->
+                {% for csv_file in csv_files %}
+                    <option value="{{ csv_file }}">{{ csv_file }}</option>
+                {% endfor %}
+            </select>
+            <button id="saveBtn" style="font-size: 16px; padding: 10px 20px; margin-top: 20px;
+                                background-color: green; color: white; border: none; cursor: pointer;">Save</button>
+            <button id="deleteBtn" style="font-size: 16px; padding: 10px 20px; margin-top: 10px; 
+                                background-color: red; color: white; border: none; cursor: pointer;">Delete</button>
+        </div>
+
+        <textarea name="csv_file_content" 
+                placeholder="File is empty now" 
+                cols="22" rows="15" 
+                style="font-size: 16px; margin-left: 30px;"></textarea>
+
+        <div style="display: flex; flex-direction: column; margin-left: 150px;">
+            <input type="text" name="new_file_name" placeholder="Enter filename" 
+            style="font-size: 16px;">
+
+            <button id="createBtn" style="font-size: 16px; padding: 10px 20px; margin-top: 10px; 
+                                background-color: blue; color: white; border: none; cursor: pointer;">Create new file</button>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='interact_with_csv_files.js') }}"></script>
+
+    <!-- Radio buttons for search modes -->
+    <div style="text-align: center; margin-top: 20px; margin-bottom: 15px;">
+        <h2>Select Search Mode</h2>
+        <div style="display: inline-block;">
+            <label for="searchText">
+                <input type="radio" id="searchText" name="searchMode" value="text" checked>
+                Search by text
+            </label>
+        </div>
+        <div style="display: inline-block; margin-left: 40px;">
+            <label for="temporalSearch">
+                <input type="radio" id="temporalSearch" name="searchMode" value="temporal">
+                Temporal search
+            </label>
+        </div>
+        <div style="display: inline-block; margin-left: 40px;">
+            <label for="textAndSketch">
+                <input type="radio" id="textAndSketch" name="searchMode" value="textAndSketch">
+                Search by text and sketch
+            </label>
+        </div>
+    </div>
+
+    <!-- Content areas that will be shown/hidden based on radio selection -->
+    <div id="textSearchArea" style="display: none; margin-left: 15px;">
+        <div style="display: flex; align-items: center; margin-left: 15px; gap: 30px;">
+            <textarea id="searchTextArea" placeholder="Enter search text" cols="60" rows="15" 
+                      style="font-size: 18px;"></textarea>
+            <i id="translated_text_for_search_by_text" style="display: block; font-size: 18px; margin-left: 15px; max-width: 550px; word-wrap: break-word;"></i>
+        </div>        
+        <button id="clearBtn1" style="font-size: 16px; padding: 10px 20px; margin-top: 10px; margin-left: 15px; 
+                background-color: red; color: white; border: none; cursor: pointer;" 
+                onclick="clearText()">Clear</button>
+        <button id="searchBtn1" style="font-size: 16px; padding: 10px 20px; margin-top: 10px; 
+                background-color: green; color: white; border: none; cursor: pointer;"
+                onclick="searchByText()">Search</button>
+    </div>
+    
+    <div id="temporalSearchArea" style="display: none; display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 10px;">
+        <div style="display: flex; gap: 40px;">
+            <textarea id="text_first_this_area" placeholder="First this..." cols="50" rows="15" 
+                      style="font-size: 18px;"></textarea>
+            <textarea id="text_then_that_area" placeholder="Then that..." cols="50" rows="15" 
+                      style="font-size: 18px;"></textarea>
+        </div>
+        
+        <div style="display: flex; gap: 20px;">
+            <button id="clearBtn2" style="font-size: 16px; padding: 10px 20px; 
+                    background-color: red; color: white; border: none; cursor: pointer;" 
+                    onclick="clearText()">Clear</button>
+            <button id="searchBtn2" style="font-size: 16px; padding: 10px 20px; 
+                    background-color: green; color: white; border: none; cursor: pointer;"
+                    onclick="performTemporalSearch()">Search</button>
+        </div>
+
+        <div style="width: 100%; text-align: left; margin-left: 100px;">
+            <i id="translated_text_for_temporal_search" style="display: block; font-size: 18px; max-width: 550px; word-wrap: break-word;"></i>
+        </div>
+    </div>
+    
+    <div id="textAndSketchArea" style="display: none; display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 20px;">
+        <!-- Container for the textarea and canvas, side by side -->
+        <div style="display: flex; gap: 40px;">
+            <textarea placeholder="Enter search text" cols="60" rows="15" 
+                      style="font-size: 18px;"></textarea>
+            <canvas id="drawingCanvas" width="480" height="300"></canvas> 
+        </div>
+        
+        <!-- Container for the buttons, centered beneath the textarea and canvas -->
+        <div style="display: flex; gap: 20px;">
+            <button id="searchBtn3" style="font-size: 16px; padding: 10px 20px; 
+                    background-color: green; color: white; border: none; cursor: pointer;"
+                    onclick="searchByText()">Search</button>
+            <button id="clearBtn3" style="font-size: 16px; padding: 10px 20px; 
+                    background-color: red; color: white; border: none; cursor: pointer;" 
+                    onclick="clearCanvas()">Clear sketch</button>
+        </div>
+    </div>
+
+    <!-- Link to the external JavaScript file -->
+    <script src="{{ url_for('static', filename='search_mode.js') }}"></script>
+    <script src="{{ url_for('static', filename='canvasDrawing.js') }}"></script>
+    <script src="{{ url_for('static', filename='zoom.js') }}"></script>
+
+    <h2 style="text-align: center; margin-top: 5px;">Search Result</h2>
+    <div id="search-result" style="margin-top: 30px;"></div>
+
+    <div id="background-overlay" class="dark-background" style="display:none;" onclick="toggleZoom()"></div>
+</body>
+</html>

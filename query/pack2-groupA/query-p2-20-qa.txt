@@ -1,0 +1,1 @@
+Trong một buổi trình diễn drone có biểu diễn một con gấu trúc trên bầu trời. Dàn drone này còn biểu diễn xếp thành một con số. Hỏi con số được biểu diễn là số bao nhiêu?
