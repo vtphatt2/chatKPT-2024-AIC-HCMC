@@ -10,8 +10,8 @@ import numpy as np
 SUBMISSION_FOLDER = os.path.join("..", "submission")
 
 print("[2] Load dataset")
-# data_dir = os.path.join(os.getcwd(), '..', 'data') # link to 'data' folder, remember to organize as described in Github
-data_dir = '/Users/VoThinhPhat/Desktop/data'
+data_dir = os.path.join(os.getcwd(), '..', 'data') # link to 'data' folder, remember to organize as described in Github
+# data_dir = '/Users/VoThinhPhat/Desktop/data'
 dataset_manager = dataset_manager.Dataset(data_dir=data_dir)
 
 
@@ -79,7 +79,7 @@ def searchByText(text_query, k = 200, discarded_videos = "", output_file = ""):
                         with open(output_file, 'a') as file:
                             file.write(f"{video_name},{dataset[video_name][results[j][1]]['frame_id']}\n")
             
-            if (len(x[1]) < 5) :
+            if (len(x[2]) < 5) :
                 low = max(0, left - 2)
                 high = min(right + 3, len(dataset[video_name]))
                 for i in range(low, left):
@@ -112,8 +112,8 @@ def temporalSearch(text_first_this, text_then_that, k = 100, range_size = 8, dis
         num_vectors = len(embeddings_array)
         for i in range(0, num_vectors - range_size + 1, int(range_size / 2)):
             block = embeddings_array[i:i+range_size]
-            x_cos_sim = cosine_similarity([x], block[:int(0.7 * range_size)])[0]
-            y_cos_sim = cosine_similarity([y], block[int(0.3 * range_size):])[0]
+            x_cos_sim = cosine_similarity([x], block[:int(0.65 * range_size)])[0]
+            y_cos_sim = cosine_similarity([y], block[int(0.35 * range_size):])[0]
             block_similarity = (np.max(x_cos_sim) + np.max(y_cos_sim)) / 2
             
             results.append((block_similarity, video_name, i))
@@ -127,7 +127,7 @@ def temporalSearch(text_first_this, text_then_that, k = 100, range_size = 8, dis
         x = [video_name, video_youtube_link_dict[video_name], []]
         if (output_file != "" and output_file.endswith('.csv')):
             with open(output_file, 'a') as file:
-                file.write(f"{video_name},{dataset[video_name][best_index]['frame_id']}\n")        
+                file.write(f"{video_name},{dataset[video_name][best_index + int(0.12 * range_size)]['frame_id']}\n")        
         for j in range(best_index, best_index + range_size):
             x[2].append((dataset[video_name][j]['filepath'], dataset[video_name][j]['frame_id']))
         submission_list.append(x)
