@@ -14,37 +14,37 @@
 }
 
 .scroll-container {
-    flex-grow: 1; /* This makes the scroll container take up the remaining space */
-    overflow-x: auto;
-    white-space: nowrap;
+    display: flex;
+    gap: -100px; /* Adjust the gap between the image items */
+    overflow-x: auto; /* Allow horizontal scrolling */
+    white-space: nowrap; /* Prevent wrapping of items */
 }
 
 .image-item {
-    display: inline-block;
-    margin: 10px;
-    text-align: center;
-    max-width: 150px;
+    display: flex;
+    flex-direction: column; /* Stack image and caption vertically */
+    align-items: center; /* Center the image and caption */
+    margin: 10px; /* Add space around each image item */
 }
 
 .image-item img {
-    width: 150px;  /* Fixed width */
-    height: auto;
-    display: block;
-    transition: transform 0.3s ease;
-    cursor: zoom-in;
+    width: 300px;  /* Set a fixed width for the images */
+    height: auto;  /* Maintain aspect ratio */
+    display: block; /* Ensures the image behaves as a block element */
 }
 
 .image-caption {
     margin-top: 5px;
-    font-size: 14px;
-    color: #555;
+    font-size: 16px;
+    text-align: center; /* Center the caption below the image */
+    color: #000; /* Customize the text color if needed */
 }
 
 .zoom-fullscreen {
     position: fixed;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%) scale(8);
+    transform: translate(-50%, -50%) scale(4);
     z-index: 1000;
     cursor: zoom-out;
     max-width: 90vw;
