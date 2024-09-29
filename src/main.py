@@ -269,7 +269,7 @@ def search_by_text_and_sketch():
         # Lưu ảnh để kiểm tra (tùy chọn)
         sketch_image.save("received_sketch.png")
         
-    submission_list = searchByTextAndSketch(text_query, sketch_image, k=100, discarded_videos=discarded_videos, output_file=new_file_name)
+    submission_list = searchByTextAndSketch(translated_text, sketch_image, k=100, discarded_videos=discarded_videos, output_file=new_file_name)
 
     # Prepare and return the response
     response = jsonify({
