@@ -113,13 +113,28 @@ def temporalSearch(text_first_this, text_then_that, k = 100, range_size = 8, dis
             continue
 
         num_vectors = len(embeddings_array)
+        prefix_sum_embedding = [embeddings_array[0]]
+        for i in range(1, num_vectors):
+            prefix_sum_embedding.append(prefix_sum_embedding[i - 1] + embeddings_array[i])
+
         for i in range(0, num_vectors - range_size + 1, int(range_size / 2)):
-            block = embeddings_array[i:i+range_size]
-            x_cos_sim = cosine_similarity([x], block[:int(0.65 * range_size)])[0]
-            y_cos_sim = cosine_similarity([y], block[int(0.35 * range_size):])[0]
-            block_similarity = (np.max(x_cos_sim) + np.max(y_cos_sim)) / 2
+            x_cos_sim = cosine_similarity([x], [prefix_sum_embedding[i + int(0.65 * range_size)] - prefix_sum_embedding[i]])[0]
+            y_cos_sim = cosine_similarity([y], [prefix_sum_embedding[i + range_size - 1] - prefix_sum_embedding[i + int(0.35 * range_size)]])[0]
+            results.append((x_cos_sim * y_cos_sim, video_name, i))
+
+        # for i in range(0, num_vectors - range_size + 1, int(range_size / 2)):
+        #     block = embeddings_array[i:i+range_size]
+        #     x_cos_sim = cosine_similarity([x], block[:int(0.65 * range_size)])[0]
+        #     y_cos_sim = cosine_similarity([y], block[int(0.35 * range_size):])[0]
+        #     block_similarity = (np.max(x_cos_sim) + np.max(y_cos_sim)) / 2
+
+        # for i in range(0, num_vectors - range_size + 1, int(range_size / 2)):
+        #     block = embeddings_array[i:i+range_size]
+        #     x_cos_sim = cosine_similarity([x], block[:int(0.65 * range_size)])[0]
+        #     y_cos_sim = cosine_similarity([y], block[int(0.35 * range_size):])[0]
+        #     block_similarity = (np.max(x_cos_sim) * np.max(y_cos_sim))
             
-            results.append((block_similarity, video_name, i))
+        #     results.append((block_similarity, video_name, i))
 
     results.sort(key=lambda x: x[0], reverse=True)
     top_results = results[:k]
