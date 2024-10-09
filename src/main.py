@@ -58,6 +58,7 @@ def searchByText(text_query, k = 200, discarded_videos = "", output_file = ""):
             pass  
 
     video_youtube_link_dict = dataset_manager.get_video_youtube_link_dict()
+    video_fps_dict = dataset_manager.get_video_fps_dict()
     visited = [False] * k
     for i in range(0, k):
         if (not visited[i]):
@@ -65,7 +66,7 @@ def searchByText(text_query, k = 200, discarded_videos = "", output_file = ""):
             right = results[i][1]
             visited[i] = True
             video_name = results[i][0]
-            x = [video_name, video_youtube_link_dict[video_name], [(dataset[video_name][results[i][1]]['filepath'], dataset[video_name][results[i][1]]['frame_id'])]]
+            x = [video_name, video_youtube_link_dict[video_name], [(dataset[video_name][results[i][1]]['filepath'], dataset[video_name][results[i][1]]['frame_id'])], video_fps_dict[video_name]]
 
             if (output_file != "" and output_file.endswith('.csv')):
                 with open(output_file, 'a') as file:
@@ -140,9 +141,10 @@ def temporalSearch(text_first_this, text_then_that, k = 100, range_size = 8, dis
     top_results = results[:k]
 
     video_youtube_link_dict = dataset_manager.get_video_youtube_link_dict()
+    video_fps_dict = dataset_manager.get_video_fps_dict()
     dataset = dataset_manager.get_dataset()
     for similarity, video_name, best_index in top_results:
-        x = [video_name, video_youtube_link_dict[video_name], []]
+        x = [video_name, video_youtube_link_dict[video_name], [], video_fps_dict[video_name]]
         if (output_file != "" and output_file.endswith('.csv')):
             with open(output_file, 'a') as file:
                 file.write(f"{video_name},{dataset[video_name][best_index + int(0.12 * range_size)]['frame_id']}\n")        
@@ -176,6 +178,7 @@ def searchByTextAndSketch(text_query, sketch_image, k = 200, discarded_videos = 
             pass  
 
     video_youtube_link_dict = dataset_manager.get_video_youtube_link_dict()
+    video_fps_dict = dataset_manager.get_video_fps_dict()
     visited = [False] * k
     for i in range(0, k):
         if (not visited[i]):
@@ -183,7 +186,7 @@ def searchByTextAndSketch(text_query, sketch_image, k = 200, discarded_videos = 
             right = results[i][1]
             visited[i] = True
             video_name = results[i][0]
-            x = [video_name, video_youtube_link_dict[video_name], [(dataset[video_name][results[i][1]]['filepath'], dataset[video_name][results[i][1]]['frame_id'])]]
+            x = [video_name, video_youtube_link_dict[video_name], [(dataset[video_name][results[i][1]]['filepath'], dataset[video_name][results[i][1]]['frame_id'])], video_fps_dict[video_name]]
 
             if (output_file != "" and output_file.endswith('.csv')):
                 with open(output_file, 'a') as file:

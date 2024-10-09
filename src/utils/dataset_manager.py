@@ -3,6 +3,7 @@ import os
 import numpy as np
 from utils.SampleImage import SampleImage
 import json
+import csv
 
 class Dataset:
     def __init__(self, data_dir):
@@ -11,6 +12,9 @@ class Dataset:
         self.video_clip14_embedding_dict = {}
         self.video_task_former_embedding_dict = {}
         self.video_youtube_link_dict = {}
+
+        with open(os.path.join(data_dir, 'video_fps.json'), 'r') as json_file:
+            self.video_fps_dict = json.load(json_file)
 
         for batch in ['batch1', 'batch2', 'batch3']:
             clip14_paths = glob(os.path.join(data_dir, batch, 'clip-features-14', '*.npy'))
@@ -47,4 +51,7 @@ class Dataset:
     
     def get_video_youtube_link_dict(self):
         return self.video_youtube_link_dict
+    
+    def get_video_fps_dict(self):
+        return self.video_fps_dict
                                   
