@@ -1,0 +1,63 @@
+.video-section {
+    display: flex;
+    align-items: center;
+    margin-bottom: -5px; /* Add space between video sections */
+}
+
+.video-header {
+    flex: 0 0 200px; /* Fixed width for the video name section */
+    font-size: 20px;
+    font-weight: bold;
+    text-align: left;
+    margin-right: -30px; /* Add some space between the video name and image list */
+    margin-left: 30px;
+}
+
+.scroll-container {
+    display: flex;
+    gap: -100px; /* Adjust the gap between the image items */
+    overflow-x: auto; /* Allow horizontal scrolling */
+    white-space: nowrap; /* Prevent wrapping of items */
+}
+
+.image-item {
+    display: flex;
+    flex-direction: column; /* Stack image and caption vertically */
+    align-items: center; /* Center the image and caption */
+    margin: 10px; /* Add space around each image item */
+}
+
+.image-item img {
+    width: 300px;  /* Set a fixed width for the images */
+    height: auto;  /* Maintain aspect ratio */
+    display: block; /* Ensures the image behaves as a block element */
+}
+
+.image-caption {
+    margin-top: 5px;
+    font-size: 16px;
+    text-align: center; /* Center the caption below the image */
+    color: #000; /* Customize the text color if needed */
+}
+
+.zoom-fullscreen {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(4);
+    z-index: 1000;
+    cursor: zoom-out;
+    max-width: 90vw;
+    max-height: 90vh;
+}
+
+
+.dark-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 999;
+}

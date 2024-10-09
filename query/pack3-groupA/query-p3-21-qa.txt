@@ -1,0 +1,1 @@
+Cảnh một người đang xếp các khối bột bánh mì lên bàn. Sau đó, người này bắt đầu quét một chất lên các khối bột. Cảnh quay chuyển sang toàn cảnh, cho thấy cả người này và các khối bột, cùng với hai người mặc áo trắng ở phía sau. Các khối bột được xếp thành ba cột. Hỏi khi quét các khối bột ở giữa, người này đã quét từ phải sang trái khung hình bao nhiêu lần?

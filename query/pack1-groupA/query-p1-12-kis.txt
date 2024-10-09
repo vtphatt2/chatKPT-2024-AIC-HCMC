@@ -1,0 +1,1 @@
+Cảnh chiếu các hộp lương thực màu đỏ, vàng, xanh  xếp thành hình một con gấu. Tiếp theo là những hình dáng khác nhau ví dụ như hươu cao cổ, chim.

@@ -1,9 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[1]:
-
-
 import fiftyone as fo
 import os
 import pandas as pd
@@ -22,22 +16,15 @@ from clip.model import convert_weights, CLIP
 from clip.clip import _transform, load, tokenize
 
 
-# In[2]:
-
-
 # run in about 15 seconds
 if fo.dataset_exists("AIC_2024"):
     fo.delete_dataset("AIC_2024")
     
 dataset = fo.Dataset.from_images_dir(
     name="AIC_2024", 
-    images_dir=os.path.join("..", "data", "batch1", "keyframes"), 
+    images_dir=os.path.join("..", "data", "batch1"), 
     recursive=True
 )
-
-
-# In[3]:
-
 
 # run in about 36 seconds
 unique_videos = set()
@@ -46,10 +33,6 @@ for sample in dataset:
     sample['batch'] = tmp.rsplit(os.sep, 4)[-3]
     unique_videos.add(sample['video'])
     sample.save()
-
-
-# In[4]:
-
 
 # object detection
 # for sample in dataset:
@@ -75,9 +58,6 @@ for sample in dataset:
 #     sample.save()
 
 
-# In[5]:
-
-
 # run in nearly 40 seconds
 video_frameid_dict = {}
 for b in [1, 2, 3]:
@@ -91,10 +71,6 @@ for sample in dataset:
     print(sample['video'] + '-' + sample['keyframe_id'])
     sample['frame_id'] = video_frameid_dict[sample['video']].iloc[int(sample['keyframe_id']) - 1]
     sample.save()
-
-
-# In[6]:
-
 
 # run in about 1 minutes
 video_keyframe_dict = {}
@@ -126,36 +102,21 @@ for sample in dataset:
     sample['clip-14'] = embedding_dict[sample['video']][sample['keyframe_id']]
     sample.save()
 
-
-# In[7]:
-
-
-dataset.first()
-
-
-# In[8]:
-
-
-# run in 10 minutes
-device = "cuda" if torch.cuda.is_available() else "cpu"
+if torch.cuda.is_available():
+    device = "cuda"  # Use GPU with CUDA
+elif torch.backends.mps.is_available():
+    device = "mps"  # Use Metal Performance Shaders for Apple Silicon
+else:
+    device = "cpu"  # Default to CPU
 model = CLIPModel.from_pretrained("openai/clip-vit-large-patch14-336").to(device)
 processor = CLIPProcessor.from_pretrained("openai/clip-vit-large-patch14-336")
 
-
-# In[9]:
-
-
-# run in 11 seconds
 image_samples = []
 image_embeddings = []
 for sample in dataset:
     image_samples.append(sample)
     image_embeddings.append(sample['clip-14']) 
 image_embeddings = np.array(image_embeddings)
-
-
-# In[10]:
-
 
 def submission(text_query, k, csv_file, Subquery=False):
     inputs = processor(text=[text_query], return_tensors="pt", padding=True, truncation=True).to(device)
@@ -182,10 +143,6 @@ def submission(text_query, k, csv_file, Subquery=False):
 
     return dataset_submission
 
-
-# In[15]:
-
-
 # text_query = "scene of a rescuer wearing a blue flashlight on his head rescuing a person buried underground."
 # output_file = "output.csv"
 
@@ -193,10 +150,6 @@ def submission(text_query, k, csv_file, Subquery=False):
 # dataset_submission = submission(text_query, 500, output_file)
 # session = fo.launch_app(dataset_submission, auto=False)
 # session.open_tab()
-
-
-# In[4]:
-
 
 import csv
 from collections import OrderedDict
@@ -223,10 +176,6 @@ def organizeOutput(input_file, output_file):
 
 # organizeOutput('output.csv', 'output_organized.csv')
 
-
-# In[ ]:
-
-
 import os
 import pandas as pd
 
@@ -249,7 +198,7 @@ def calculate_keyframe_id(path):
 
             # Tạo đường dẫn keyframe
             keyframe_path = os.path.join(
-                r"C:\Users\LENOVO\Desktop\chatKPT-2024-AIC-HCMC\data\batch1\keyframes",
+                r"/Users/VoThinhPhat/Desktop/chatKPT-2024-AIC-HCMC/data/batch1/keyframes",
                 f"keyframes_{video.split('_')[0]}",
                 video,
                 f"{key_frame:03d}.jpg"
@@ -267,17 +216,10 @@ def calculate_keyframe_id(path):
     return keyframe_paths
 
 
-# In[ ]:
-
-
-path_to_csv = r"C:\Users\LENOVO\Desktop\chatKPT-2024-AIC-HCMC\src\output.csv"
+path_to_csv = r"output.csv"
 keyframe_paths = calculate_keyframe_id(path_to_csv)
 for path in keyframe_paths:
     print(path)
-
-
-# In[ ]:
-
 
 def loadKeyframes(image_path):
     keyframe_paths = []
@@ -291,10 +233,6 @@ def loadKeyframes(image_path):
             keyframe_paths.append(keyframe_path)
                 
     return keyframe_paths
-
-
-# In[ ]:
-
 
 import json
 import os
@@ -323,4 +261,3 @@ def getImageInformation(path):
     # frame_id = sample["frame_id"] if sample else None
     
     return publish_date, watch_url
-
