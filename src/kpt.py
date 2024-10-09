@@ -3,12 +3,11 @@ import os
 import csv
 import torch
 from PyQt6 import QtCore, QtGui, QtWidgets
-from PyQt6.QtGui import QScreen
 from PyQt6.QtWidgets import QFileDialog
 from sklearn.metrics.pairwise import cosine_similarity
 import fiftyone as fo
+from submission import *
 from submission import submission, calculate_keyframe_id, getImageInformation, organizeOutput
-from submission import organizeObjectData, getTopObjects, getObjectInsights
 
 class ImageWindow(QtWidgets.QWidget):
     def __init__(self, image_path):
@@ -137,87 +136,82 @@ class ImageWindow(QtWidgets.QWidget):
     
 class Ui_MainWindow(object):    
     def setupUi(self, MainWindow):
-
-        # get size of screen
-        screen = QtWidgets.QApplication.primaryScreen()
-        size = screen.size()
-        width, height = size.width(), size.height()-100
-
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(width, height)
+        MainWindow.resize(1112, 665)
         MainWindow.setStyleSheet("")
         self.centralwidget = QtWidgets.QWidget(parent=MainWindow)
         self.centralwidget.setObjectName("centralwidget")
-
-        # set up Suggest obejct window
-        self.suggestObjectWindow = QtWidgets.QGroupBox(parent=self.centralwidget)
-        self.suggestObjectWindow.setGeometry(QtCore.QRect(20, 20, int(width/8)-40, height-50))
-        self.suggestObjectWindow.setObjectName("suggestObjectWindow")
-        self.suggestObjectWindow.setTitle("Suggest Object")
-        
-        self.suggestObjectTextEdit = QtWidgets.QPlainTextEdit(parent=self.suggestObjectWindow)
-        self.suggestObjectTextEdit.setGeometry(QtCore.QRect(10, 20, int(width/8)-60, height-80))
-        self.suggestObjectTextEdit.setObjectName("suggestObjectTextEdit")
-        self.suggestObjectTextEdit.setReadOnly(True)
         
         # Set up textInputWindow and its widgets
         self.textInputWindow = QtWidgets.QGroupBox(parent=self.centralwidget)
-        self.textInputWindow.setGeometry(QtCore.QRect(int(width/8)-20, 20, 2*int(width/8)-40, int(height/2)))
+        self.textInputWindow.setGeometry(QtCore.QRect(20, 20, 281, 281))
         font = QtGui.QFont()
         font.setFamily("Consolas")
         font.setPointSize(8)
         self.textInputWindow.setFont(font)
         self.textInputWindow.setObjectName("textInputWindow")
         self.textInput = QtWidgets.QPlainTextEdit(parent=self.textInputWindow)
-        self.textInput.setGeometry(QtCore.QRect(10, 10, 2*int(width/8)-60, int(height/4)-40))
+        self.textInput.setGeometry(QtCore.QRect(10, 20, 256, 131))
         font = QtGui.QFont()
         font.setFamily("Consolas")
         font.setPointSize(8)
         self.textInput.setFont(font)
         self.textInput.setObjectName("textInput")
-
-        # Add Object Input label and text input
-        self.objectInputLabel = QtWidgets.QLabel(parent=self.textInputWindow)
-        self.objectInputLabel.setGeometry(QtCore.QRect(10,int(height/4)-30, 100, 20))
-        self.objectInputLabel.setObjectName("objectInputLabel")
-        self.objectInput = QtWidgets.QPlainTextEdit(parent=self.textInputWindow)
-        self.objectInput.setGeometry(QtCore.QRect(10,int(height/4)-10, 2*int(width/16)-20 , int(height/4)))
-        self.objectInput.setObjectName("objectInput")
-        self.objectInput.textChanged.connect(self.handle_object_input)
-
-        # Set up Search OR and Search OB buttons
-        self.searchOR = QtWidgets.QPushButton(parent=self.textInputWindow)
-        self.searchOR.setGeometry(QtCore.QRect(230, 180, 100, 41))
-        self.searchOR.setObjectName("searchOR")
-        self.searchOB = QtWidgets.QPushButton(parent=self.textInputWindow)
-        self.searchOB.setGeometry(QtCore.QRect(230, 230, 100, 41))
-        self.searchOB.setObjectName("searchOB")
+        self.peopleNumber = QtWidgets.QSpinBox(parent=self.textInputWindow)
+        self.peopleNumber.setGeometry(QtCore.QRect(70, 160, 42, 21))
+        self.peopleNumber.setObjectName("peopleNumber")
+        self.label = QtWidgets.QLabel(parent=self.textInputWindow)
+        self.label.setGeometry(QtCore.QRect(10, 159, 47, 14))
+        self.label.setObjectName("label")
+        self.label_2 = QtWidgets.QLabel(parent=self.textInputWindow)
+        self.label_2.setGeometry(QtCore.QRect(10, 200, 47, 14))
+        self.label_2.setObjectName("label_2")
+        self.maleNumber = QtWidgets.QSpinBox(parent=self.textInputWindow)
+        self.maleNumber.setGeometry(QtCore.QRect(70, 200, 42, 21))
+        self.maleNumber.setObjectName("maleNumber")
+        self.label_3 = QtWidgets.QLabel(parent=self.textInputWindow)
+        self.label_3.setGeometry(QtCore.QRect(10, 240, 47, 14))
+        self.label_3.setObjectName("label_3")
+        self.femaleNumber = QtWidgets.QSpinBox(parent=self.textInputWindow)
+        self.femaleNumber.setGeometry(QtCore.QRect(70, 240, 42, 21))
+        self.femaleNumber.setObjectName("femaleNumber")
+        self.clearText = QtWidgets.QPushButton(parent=self.textInputWindow)
+        self.clearText.setGeometry(QtCore.QRect(190, 160, 75, 41))
+        self.clearText.setObjectName("clearText")
+        self.clearNumber = QtWidgets.QPushButton(parent=self.textInputWindow)
+        self.clearNumber.setGeometry(QtCore.QRect(190, 210, 75, 41))
+        self.clearNumber.setObjectName("clearNumber")
         
         # Set up sketchInputWindow and its widgets
         self.sketchInputWindow = QtWidgets.QGroupBox(parent=self.centralwidget)
-        self.sketchInputWindow.setGeometry(QtCore.QRect(int(width/8)-20, int(height/2)+20 , 2*int(width/8)-40, int(height/2)-50))
+        self.sketchInputWindow.setGeometry(QtCore.QRect(20, 310, 281, 271))
         self.sketchInputWindow.setObjectName("sketchInputWindow")
         self.graphicsView = QtWidgets.QGraphicsView(parent=self.sketchInputWindow)
-        self.graphicsView.setGeometry(QtCore.QRect(10, 20, 2*int(width/8)-60, 190))
+        self.graphicsView.setGeometry(QtCore.QRect(10, 20, 256, 144))
         self.graphicsView.setObjectName("graphicsView")
         self.clearGraphic = QtWidgets.QPushButton(parent=self.sketchInputWindow)
-        self.clearGraphic.setGeometry(QtCore.QRect(250, 220, 75, 41))
+        self.clearGraphic.setGeometry(QtCore.QRect(190, 170, 75, 41))
         self.clearGraphic.setObjectName("clearGraphic")
         self.loadGraphic = QtWidgets.QPushButton(parent=self.sketchInputWindow)
-        self.loadGraphic.setGeometry(QtCore.QRect(150, 220, 75, 41))
+        self.loadGraphic.setGeometry(QtCore.QRect(190, 220, 75, 41))
         self.loadGraphic.setObjectName("loadGraphic")
         
         # Set up search and clearAll buttons
         self.search = QtWidgets.QPushButton(parent=self.centralwidget)
-        self.search.setGeometry(QtCore.QRect(int(width/8) +20, height-80, 121, 41))
+        self.search.setGeometry(QtCore.QRect(170, 590, 121, 41))
         self.search.setObjectName("search")
         self.clearAll = QtWidgets.QPushButton(parent=self.centralwidget)
-        self.clearAll.setGeometry(QtCore.QRect(int(width/8)+180, height-80, 121, 41))
+        self.clearAll.setGeometry(QtCore.QRect(30, 590, 121, 41))
         self.clearAll.setObjectName("clearAll")
-   
+
+        # Set up Search O (Search and Organize)
+        self.searchO = QtWidgets.QPushButton(parent=self.sketchInputWindow)
+        self.searchO.setGeometry(QtCore.QRect(10, 170, 75, 41))
+        self.searchO.setObjectName("searchO")
+        
         # Set up scrollable grid layout
         self.scrollArea = QtWidgets.QScrollArea(parent=self.centralwidget)
-        self.scrollArea.setGeometry(QtCore.QRect(3*int(width/8)-50, 20, 5*int(width/8)+20, height - 50))
+        self.scrollArea.setGeometry(QtCore.QRect(310, 20, 791, 611))
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setObjectName("scrollArea")
 
@@ -240,14 +234,13 @@ class Ui_MainWindow(object):
         self.retranslateUi(MainWindow)
         
         # Connect buttons to event handlers
-        # self.clearText.clicked.connect(self.clear_text_content)
-        # self.clearNumber.clicked.connect(self.clear_spinbox_values)
+        self.clearText.clicked.connect(self.clear_text_content)
+        self.clearNumber.clicked.connect(self.clear_spinbox_values)
         self.clearGraphic.clicked.connect(self.clear_graphic_content)
         self.clearAll.clicked.connect(self.clear_all_content)
         self.loadGraphic.clicked.connect(self.load_graphic_image)
         self.search.clicked.connect(self.handle_search)
-        self.searchOR.clicked.connect(self.handle_searchOR)
-        self.searchOB.clicked.connect(self.handle_searchOB)
+        self.searchO.clicked.connect(self.handle_searchO)
 
         # Set up scene for graphicsView
         self.scene = QtWidgets.QGraphicsScene()
@@ -259,9 +252,11 @@ class Ui_MainWindow(object):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
         self.textInputWindow.setTitle(_translate("MainWindow", "Text Input"))
-        self.objectInputLabel.setText(_translate("MainWindow", "Object Input"))
-        self.searchOR.setText(_translate("MainWindow", "Search OR"))
-        self.searchOB.setText(_translate("MainWindow", "Search OB"))
+        self.label.setText(_translate("MainWindow", "Person"))
+        self.label_2.setText(_translate("MainWindow", "Male"))
+        self.label_3.setText(_translate("MainWindow", "Female"))
+        self.clearText.setText(_translate("MainWindow", "Clear text"))
+        self.clearNumber.setText(_translate("MainWindow", "Clear no."))
         self.sketchInputWindow.setTitle(_translate("MainWindow", "Sketch Input"))
         self.clearGraphic.setText(_translate("MainWindow", "Clear"))
         self.loadGraphic.setText(_translate("MainWindow", "Load"))
@@ -323,21 +318,9 @@ class Ui_MainWindow(object):
 
     def clear_all_content(self):
         self.clear_text_content()
+        self.clear_spinbox_values()
         self.clear_graphic_content()
-        self.suggestObjectTextEdit.clear()
-        with open("image_result_path.txt", "w") as file:
-            file.write("")
-        with open("output.csv", "w") as file:
-            file.write("")
-        with open("output_organized.csv", "w") as file:
-            file.write("")
-        with open("top_objects.csv", "r") as file:
-            lines = file.readlines()
-    
-        if lines:
-            with open("top_objects.csv", "w") as file:
-                file.write(lines[0])
-    
+
     def load_graphic_image(self):
         file_path, _ = QFileDialog.getOpenFileName(None, "Open Image File", "", 
                                                 "Images (*.png *.xpm *.jpg);;All Files (*)")
@@ -374,40 +357,33 @@ class Ui_MainWindow(object):
     def handle_search(self):
         text_query = self.textInput.toPlainText()
         csv_file = "output.csv"
+
         subqueries = text_query.split('/') if '/' in text_query else [text_query]
         is_subquery = '/' in text_query
 
         for subquery in subqueries:
             subquery = subquery.strip()
-            dataset_submission = submission(subquery, 500, csv_file, is_subquery)
+            dataset_submission = submission(subquery, 200, csv_file, is_subquery)
     
         keyframe_paths = calculate_keyframe_id(csv_file)
+
+        # Clear the existing layout
         self.clear_layout(self.gridLayout)
+
+        # load images from image_result_path.txt and put to loadImages
         self.loadImages("image_result_path.txt")
 
-        # print out the suggested object
-        image_result_path = "image_result_path.txt"
-        suggested_objects = organizeObjectData(image_result_path, k=20)
-        suggested_objects_str = "\n".join([f"{obj[0]}: {obj[1]}" for obj in suggested_objects])
-        self.suggestObjectTextEdit.setPlainText(suggested_objects_str)
+    def handle_searchO(self):
 
-
-    def handle_searchOR(self):
         organizeOutput("output.csv", "output_organized.csv")
         path_to_csv = "output_organized.csv" 
         keyframe_paths = calculate_keyframe_id(path_to_csv)
+
+        # Clear the existing layout
         self.clear_layout(self.gridLayout)
+
+        # load images from image_result_path.txt and put to loadImages
         self.loadImages("image_result_path.txt")
-
-    def handle_searchOB(self):
-        pass
-
-    def handle_object_input(self, predefined_text=None):
-        if predefined_text is not None:
-            input_text = predefined_text
-        else:
-            input_text = self.objectInput.toPlainText()
-        print(f"Object Input: {input_text}")
         
 
 def run_app(path = None):
