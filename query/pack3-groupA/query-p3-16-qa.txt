@@ -1,0 +1,1 @@
+Cảnh quay cho thấy một người đang quay những đôi giày cao gót được trưng bày. Xung quanh mỗi đôi giày là một miếng vải có viền vàng và đỏ theo thứ tự từ trong ra ngoài. Tiếp theo là một pha lia máy toàn cảnh các đôi giày. Hỏi trong pha lia máy cuối cùng, có thể thấy bao nhiêu đôi giày "đang được trưng bày" mà không bị cắt bởi khung hình?

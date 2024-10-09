@@ -1,0 +1,1 @@
+Bản tin về một địa điểm. Ở địa điểm này có nhiều người chụp hình bên cạnh một bảng nhiệt độ ở ngoài trời. Bên trên là độ F, bên dưới là độ C.
