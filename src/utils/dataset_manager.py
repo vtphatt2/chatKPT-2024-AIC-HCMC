@@ -39,7 +39,7 @@ class Dataset:
 
                 metadata_path = os.path.join(data_dir, batch, 'metadata', f'{video_name}.json')
                 if (os.path.exists(metadata_path)):
-                    with open(metadata_path, 'r') as file:
+                    with open(metadata_path, 'r', encoding='utf-8') as file:
                         json_data = json.load(file)
                         self.video_youtube_link_dict[video_name] = json_data.get('watch_url')
                 else:
