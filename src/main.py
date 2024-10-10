@@ -34,7 +34,7 @@ model_task_former = model_manager.TASK_former_model(model_config_file=model_conf
 translator = GoogleTranslator(source='vi', target='en')
 
 print("[4] Load functions")
-def searchByText(text_query, k = 200, discarded_videos = "", output_file = "", keywords = ""):
+def searchByText(text_query, k = 100, discarded_videos = "", output_file = "", keywords = ""):
     submission_list = []
     text_embedding = [model_clip14.inference(text_query)]
 
@@ -106,10 +106,14 @@ def searchByText(text_query, k = 200, discarded_videos = "", output_file = "", k
     
     return submission_list
 
-def temporalSearch(text_first_this, text_then_that, k = 100, range_size = 8, discarded_videos = "", output_file = ""):
+def temporalSearch(text_first_this, text_then_that, k = 100, range_size = 8, discarded_videos = "", output_file = "", keywords = ""):
     submission_list = []
     x = model_clip14.inference(text_first_this)
     y = model_clip14.inference(text_then_that)
+    
+    keywords_list = []
+    if (keywords != ""):
+        keywords_list = keywords.split(',')
 
     discarded_set = set(video.strip() for video in discarded_videos.split(','))
 
@@ -152,8 +156,14 @@ def temporalSearch(text_first_this, text_then_that, k = 100, range_size = 8, dis
 
     video_youtube_link_dict = dataset_manager.get_video_youtube_link_dict()
     video_fps_dict = dataset_manager.get_video_fps_dict()
+    video_transcipt = dataset_manager.get_video_transcript()
     dataset = dataset_manager.get_dataset()
     for similarity, video_name, best_index in top_results:
+        if (len(keywords_list) != 0):
+            keywords_cnt = utils.count_substrings(utils.concatenate_surrounding_strings(video_transcipt[video_name], dataset[video_name][best_index]['frame_id'], video_fps_dict[video_name]), keywords_list)
+            if (keywords_cnt == 0):
+                continue
+
         x = [video_name, video_youtube_link_dict[video_name], [], video_fps_dict[video_name]]
         if (output_file != "" and output_file.endswith('.csv')):
             with open(output_file, 'a') as file:
@@ -241,7 +251,8 @@ def search_by_text():
     new_file_name = data.get('newFileName')
     translated_text = translator.translate(search_text)
     keywords = data.get('keywords')
-    submission_list = searchByText(translated_text, k=100, discarded_videos=discarded_videos, output_file=new_file_name, keywords=keywords) 
+    k = int(data.get('k'))
+    submission_list = searchByText(translated_text, k=k, discarded_videos=discarded_videos, output_file=new_file_name, keywords=keywords) 
 
     response = jsonify({
         "translated_text": translated_text,
@@ -263,9 +274,11 @@ def temporal_search():
     new_file_name = data.get('newFileName')
     translated_first_this = translator.translate(text_first_this)
     translated_then_that = translator.translate(text_then_that)
+    keywords = data.get('keywords')
+    k = int(data.get('k'))
 
-    submission_list = temporalSearch(translated_first_this, translated_then_that, k=100, range_size=20,
-                                     discarded_videos=discarded_videos, output_file=new_file_name)
+    submission_list = temporalSearch(translated_first_this, translated_then_that, k=k, range_size=20,
+                                     discarded_videos=discarded_videos, output_file=new_file_name, keywords=keywords)
 
     # Prepare and return the response
     response = jsonify({

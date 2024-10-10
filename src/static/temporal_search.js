@@ -6,6 +6,18 @@ function performTemporalSearch() {
     const translatedFirstThisElement = document.getElementById("translated_text_for_temporal_search");
     const discardedVideos = document.getElementById('discarded_videos').value;
     const newFileName = document.getElementById('new_file_name').value;
+    const keywords = document.getElementById('keywords').value;
+    const k = document.getElementById('k').value;
+    let value;
+    if (k !== '' && !isNaN(k)) {
+        value = parseInt(k, 10);
+    } 
+    else if (keywords !== '') {
+        value = 500;
+    }
+    else {
+        value = 100;
+    }
 
     // Show loading state if needed
     translatedFirstThisElement.innerText = "Processing temporal search...";
@@ -19,7 +31,9 @@ function performTemporalSearch() {
             textFirstThis: textFirstThis, 
             textThenThat: textThenThat,
             discardedVideos: discardedVideos,
-            newFileName: newFileName
+            newFileName: newFileName,
+            keywords: keywords,
+            k: value
         })
     })
     .then(response => response.json())

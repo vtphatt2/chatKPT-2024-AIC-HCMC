@@ -12,9 +12,10 @@ def time_difference(start: str, end: str) -> int:
 
 def count_substrings(s: str, a: list) -> int:
     total_count = 0
+    s_lower = s.lower() 
     
     for substring in a:
-        total_count += s.count(substring)
+        total_count += s_lower.count(substring.lower())  
     
     return total_count
 

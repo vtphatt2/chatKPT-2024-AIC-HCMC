@@ -56,6 +56,17 @@ function searchByText() {
     const discardedVideos = document.getElementById('discarded_videos').value;
     const newFileName = document.getElementById('new_file_name').value;
     const keywords = document.getElementById('keywords').value;
+    const k = document.getElementById('k').value;
+    let value;
+    if (k !== '' && !isNaN(k)) {
+        value = parseInt(k, 10);
+    } 
+    else if (keywords !== '') {
+        value = 500;
+    }
+    else {
+        value = 100;
+    }
 
     // Vô hiệu hóa nút Search
     searchBtn.disabled = true;
@@ -77,7 +88,8 @@ function searchByText() {
             searchText: searchText, 
             discardedVideos: discardedVideos,
             newFileName: newFileName,
-            keywords: keywords
+            keywords: keywords,
+            k: value
         })
     })
     .then(response => {
