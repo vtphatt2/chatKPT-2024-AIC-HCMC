@@ -19,9 +19,14 @@ with open(NO_SCRIPT_PATH, 'r', encoding="utf-8") as file:
 
 for line in tqdm(lines):
     video_name = line.strip()
+    filename, _ = video_name.split("_")
+    file_number_video = test[1:]
+    name_index = int(file_number_video)
+    
+    
     transcribed_audio_file_name = f"audio/{video_name}.wav"
     
-    if video_name.startswith('L'):
+    if name_index < 13:
         zoom_video_file_name = os.path.join(BASE_PATH, "batch1", "video", f"{video_name}.mp4")
     else:
         zoom_video_file_name = os.path.join(BASE_PATH, "batch2", "video", f"{video_name}.mp4")
