@@ -55,6 +55,7 @@ function searchByText() {
     const searchBtn = document.getElementById("searchBtn1"); // Đảm bảo ID đúng với nút Search của bạn
     const discardedVideos = document.getElementById('discarded_videos').value;
     const newFileName = document.getElementById('new_file_name').value;
+    const keywords = document.getElementById('keywords').value;
 
     // Vô hiệu hóa nút Search
     searchBtn.disabled = true;
@@ -75,7 +76,8 @@ function searchByText() {
         body: JSON.stringify({ 
             searchText: searchText, 
             discardedVideos: discardedVideos,
-            newFileName: newFileName
+            newFileName: newFileName,
+            keywords: keywords
         })
     })
     .then(response => {
@@ -108,7 +110,7 @@ function searchByText() {
         localStorage.setItem('lastSearch', JSON.stringify(searchData));
 
         // Loop through each [videoName, images] pair and dynamically create the scrollable image list
-        submissionList.forEach(([videoName, video_link, images], groupIndex) => {
+        submissionList.forEach(([videoName, video_link, images, fps], groupIndex) => {
             // Create a container for each video section
             const videoSection = document.createElement('div');
             videoSection.classList.add('video-section');
@@ -120,7 +122,7 @@ function searchByText() {
             videoSection.appendChild(videoHeader);
 
             const videoLink = document.createElement('a');
-            videoLink.href = `${video_link}&t=${Math.floor(images[0][1] / 25)}s`;  // Set the link to point to the video
+            videoLink.href = `${video_link}&t=${Math.floor(images[0][1] / fps)}s`;  // Set the link to point to the video
             videoLink.innerText = "Watch full video";  // Text displayed for the link
             videoLink.target = "_blank";  // Open link in a new tab
             videoLink.style.textDecoration = "none";  // Remove underline
