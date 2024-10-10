@@ -1,0 +1,1 @@
+Cảnh quay bắt đầu với một biểu đồ nhỏ trên mặt đường, có chữ "Vết cày" cùng hai mũi tên hướng lên trên theo góc máy quay. Phía dưới chữ có một số "1" được khoanh tròn. Tiếp theo, cảnh chuyển sang một hình tròn vẽ bao quanh một hình tam giác, với hình tam giác có một góc chỉ vào một chiếc xe bên cạnh. Sau đó, camera quay lại góc ban đầu với chữ "Vết cày" xuất hiện trở lại.

@@ -6,12 +6,15 @@ from routes.interact_with_csv_files import csv_routes
 from deep_translator import GoogleTranslator
 from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
+import base64
+from io import BytesIO
+from PIL import Image
 
 SUBMISSION_FOLDER = os.path.join("..", "submission")
 
 print("[2] Load dataset")
-# data_dir = os.path.join(os.getcwd(), '..', 'data') # link to 'data' folder, remember to organize as described in Github
-data_dir = '/Users/VoThinhPhat/Desktop/data'
+data_dir = os.path.join(os.getcwd(), '..', 'data') # link to 'data' folder, remember to organize as described in Github
+# data_dir = '/Users/VoThinhPhat/Desktop/data'
 dataset_manager = dataset_manager.Dataset(data_dir=data_dir)
 
 
@@ -55,6 +58,7 @@ def searchByText(text_query, k = 200, discarded_videos = "", output_file = ""):
             pass  
 
     video_youtube_link_dict = dataset_manager.get_video_youtube_link_dict()
+    video_fps_dict = dataset_manager.get_video_fps_dict()
     visited = [False] * k
     for i in range(0, k):
         if (not visited[i]):
@@ -62,7 +66,7 @@ def searchByText(text_query, k = 200, discarded_videos = "", output_file = ""):
             right = results[i][1]
             visited[i] = True
             video_name = results[i][0]
-            x = [video_name, video_youtube_link_dict[video_name], [(dataset[video_name][results[i][1]]['filepath'], dataset[video_name][results[i][1]]['frame_id'])]]
+            x = [video_name, video_youtube_link_dict[video_name], [(dataset[video_name][results[i][1]]['filepath'], dataset[video_name][results[i][1]]['frame_id'])], video_fps_dict[video_name]]
 
             if (output_file != "" and output_file.endswith('.csv')):
                 with open(output_file, 'a') as file:
@@ -79,7 +83,7 @@ def searchByText(text_query, k = 200, discarded_videos = "", output_file = ""):
                         with open(output_file, 'a') as file:
                             file.write(f"{video_name},{dataset[video_name][results[j][1]]['frame_id']}\n")
             
-            if (len(x[1]) < 5) :
+            if (len(x[2]) < 5) :
                 low = max(0, left - 2)
                 high = min(right + 3, len(dataset[video_name]))
                 for i in range(low, left):
@@ -110,30 +114,108 @@ def temporalSearch(text_first_this, text_then_that, k = 100, range_size = 8, dis
             continue
 
         num_vectors = len(embeddings_array)
+        prefix_sum_embedding = [embeddings_array[0]]
+        for i in range(1, num_vectors):
+            prefix_sum_embedding.append(prefix_sum_embedding[i - 1] + embeddings_array[i])
+
         for i in range(0, num_vectors - range_size + 1, int(range_size / 2)):
-            block = embeddings_array[i:i+range_size]
-            x_cos_sim = cosine_similarity([x], block[:int(0.7 * range_size)])[0]
-            y_cos_sim = cosine_similarity([y], block[int(0.3 * range_size):])[0]
-            block_similarity = (np.max(x_cos_sim) + np.max(y_cos_sim)) / 2
+            x_cos_sim = cosine_similarity([x], [prefix_sum_embedding[i + int(0.65 * range_size)] - prefix_sum_embedding[i]])[0]
+            y_cos_sim = cosine_similarity([y], [prefix_sum_embedding[i + range_size - 1] - prefix_sum_embedding[i + int(0.35 * range_size)]])[0]
+            results.append((x_cos_sim * y_cos_sim, video_name, i))
+
+        # for i in range(0, num_vectors - range_size + 1, int(range_size / 2)):
+        #     block = embeddings_array[i:i+range_size]
+        #     x_cos_sim = cosine_similarity([x], block[:int(0.65 * range_size)])[0]
+        #     y_cos_sim = cosine_similarity([y], block[int(0.35 * range_size):])[0]
+        #     block_similarity = (np.max(x_cos_sim) + np.max(y_cos_sim)) / 2
+
+        # for i in range(0, num_vectors - range_size + 1, int(range_size / 2)):
+        #     block = embeddings_array[i:i+range_size]
+        #     x_cos_sim = cosine_similarity([x], block[:int(0.65 * range_size)])[0]
+        #     y_cos_sim = cosine_similarity([y], block[int(0.35 * range_size):])[0]
+        #     block_similarity = (np.max(x_cos_sim) * np.max(y_cos_sim))
             
-            results.append((block_similarity, video_name, i))
+        #     results.append((block_similarity, video_name, i))
 
     results.sort(key=lambda x: x[0], reverse=True)
     top_results = results[:k]
 
     video_youtube_link_dict = dataset_manager.get_video_youtube_link_dict()
+    video_fps_dict = dataset_manager.get_video_fps_dict()
     dataset = dataset_manager.get_dataset()
     for similarity, video_name, best_index in top_results:
-        x = [video_name, video_youtube_link_dict[video_name], []]
+        x = [video_name, video_youtube_link_dict[video_name], [], video_fps_dict[video_name]]
         if (output_file != "" and output_file.endswith('.csv')):
             with open(output_file, 'a') as file:
-                file.write(f"{video_name},{dataset[video_name][best_index]['frame_id']}\n")        
+                file.write(f"{video_name},{dataset[video_name][best_index + int(0.12 * range_size)]['frame_id']}\n")        
         for j in range(best_index, best_index + range_size):
             x[2].append((dataset[video_name][j]['filepath'], dataset[video_name][j]['frame_id']))
         submission_list.append(x)
     
     return submission_list
 
+def searchByTextAndSketch(text_query, sketch_image, k = 200, discarded_videos = "", output_file = ""):
+    submission_list = []
+    embedding = [model_task_former.inference(text_query, sketch_image)]
+
+    discarded_set = set(video.strip() for video in discarded_videos.split(','))
+
+    dataset = dataset_manager.get_dataset()
+    results = []
+    for video_name, embeddings_array in dataset_manager.get_video_task_former_embedding_dict().items():
+        if (video_name in discarded_set):
+            continue
+        
+        sim_scores = cosine_similarity(embedding, embeddings_array).flatten()
+        for index, score in enumerate(sim_scores):
+            results.append((video_name, index, score))
+
+    results.sort(key=lambda item: item[2], reverse=True)
+
+    if (output_file != "" and output_file.endswith('.csv')):
+        output_file = os.path.join(SUBMISSION_FOLDER, output_file)
+        with open(output_file, 'w') as file:
+            pass  
+
+    video_youtube_link_dict = dataset_manager.get_video_youtube_link_dict()
+    video_fps_dict = dataset_manager.get_video_fps_dict()
+    visited = [False] * k
+    for i in range(0, k):
+        if (not visited[i]):
+            left = results[i][1]
+            right = results[i][1]
+            visited[i] = True
+            video_name = results[i][0]
+            x = [video_name, video_youtube_link_dict[video_name], [(dataset[video_name][results[i][1]]['filepath'], dataset[video_name][results[i][1]]['frame_id'])], video_fps_dict[video_name]]
+
+            if (output_file != "" and output_file.endswith('.csv')):
+                with open(output_file, 'a') as file:
+                    file.write(f"{video_name},{dataset[video_name][results[i][1]]['frame_id']}\n")
+
+            for j in range(i + 1, k):
+                if (not visited[j] and video_name == results[j][0] and abs(results[i][1] - results[j][1]) < 12):
+                    print((dataset[video_name][results[j][1]]['filepath'], dataset[video_name][results[j][1]]['frame_id']))
+                    x[2].append((dataset[video_name][results[j][1]]['filepath'], dataset[video_name][results[j][1]]['frame_id']))
+                    left = min(left, results[j][1])
+                    right = max(right, results[j][1])
+                    visited[j] = True
+
+                    if (output_file != "" and output_file.endswith('.csv')):
+                        with open(output_file, 'a') as file:
+                            file.write(f"{video_name},{dataset[video_name][results[j][1]]['frame_id']}\n")
+            
+            if (len(x[2]) < 5) :
+                low = max(0, left - 2)
+                high = min(right + 3, len(dataset[video_name]))
+                for i in range(low, left):
+                    x[2].append((dataset[video_name][i]['filepath'], dataset[video_name][i]['frame_id']))
+                for i in range(right + 1, high):
+                    x[2].append((dataset[video_name][i]['filepath'], dataset[video_name][i]['frame_id']))
+
+            x[2] = sorted(x[2], key=lambda a:a[1])
+            submission_list.append(x)
+    
+    return submission_list
 
 print("[5] Launch the local Web UI")
 app = Flask(__name__)
@@ -178,6 +260,38 @@ def temporal_search():
     response = jsonify({
         "translated_first_this": translated_first_this,
         "translated_then_that": translated_then_that,
+        "submission_list": submission_list
+    })
+    response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+
+    return response, 200
+
+@app.route('/search_text_and_sketch', methods=['POST'])
+def search_by_text_and_sketch():
+    # Extract the request data
+    data = request.json
+    text_query = data.get('textSearch')
+    sketch_image = data.get('sketch')
+    discarded_videos = data.get('discardedVideos')
+    new_file_name = data.get('newFileName')
+
+    translated_text = translator.translate(text_query)
+
+    if sketch_image:
+        header, encoded = sketch_image.split(',', 1)  # Tách phần header (data:image/png;base64)
+        sketch_image_data = base64.b64decode(encoded)  # Giải mã dữ liệu base64
+        sketch_image = Image.open(BytesIO(sketch_image_data))  # Tạo ảnh từ dữ liệu
+
+        # Lưu ảnh để kiểm tra (tùy chọn)
+        sketch_image.save("received_sketch.png")
+        
+    submission_list = searchByTextAndSketch(translated_text, sketch_image, k=100, discarded_videos=discarded_videos, output_file=new_file_name)
+
+    # Prepare and return the response
+    response = jsonify({
+        "translated_text": translated_text,
         "submission_list": submission_list
     })
     response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'

@@ -7,6 +7,7 @@
     <script src="{{ url_for('static', filename='reload.js') }}"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <script src="{{ url_for('static', filename='temporal_search.js') }}"></script>
+    <script src="{{ url_for('static', filename='search_by_TASK.js') }}"></script>
 </head>
 <body>
     <h1 style="text-align: center;">Welcome to chatKPT's Keyframes Search System</h1>
@@ -112,7 +113,7 @@
     <div id="textAndSketchArea" style="display: none; display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 20px;">
         <!-- Container for the textarea and canvas, side by side -->
         <div style="display: flex; gap: 40px;">
-            <textarea placeholder="Enter search text" cols="60" rows="15" 
+            <textarea id="text_task_former" placeholder="Enter search text" cols="60" rows="15" 
                       style="font-size: 18px;"></textarea>
             <canvas id="drawingCanvas" width="480" height="300"></canvas> 
         </div>
@@ -121,10 +122,15 @@
         <div style="display: flex; gap: 20px;">
             <button id="searchBtn3" style="font-size: 16px; padding: 10px 20px; 
                     background-color: green; color: white; border: none; cursor: pointer;"
-                    onclick="searchByText()">Search</button>
+                    onclick="performTASKformerSearch()">Search</button>
             <button id="clearBtn3" style="font-size: 16px; padding: 10px 20px; 
                     background-color: red; color: white; border: none; cursor: pointer;" 
                     onclick="clearCanvas()">Clear sketch</button>
+            <br>
+        </div>
+
+        <div style="width: 100%; text-align: left; margin-left: 100px;">
+            <i id="translated_text_TASKformer" style="display: block; font-size: 18px; max-width: 550px; word-wrap: break-word;"></i>
         </div>
     </div>
 

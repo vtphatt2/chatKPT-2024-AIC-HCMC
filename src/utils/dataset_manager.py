@@ -3,6 +3,7 @@ import os
 import numpy as np
 from utils.SampleImage import SampleImage
 import json
+import csv
 
 class Dataset:
     def __init__(self, data_dir):
@@ -11,6 +12,11 @@ class Dataset:
         self.video_clip14_embedding_dict = {}
         self.video_task_former_embedding_dict = {}
         self.video_youtube_link_dict = {}
+        self.video_fps_dict = {}
+
+        if (os.path.exists(os.path.join(data_dir, 'video_fps.json'))):
+            with open(os.path.join(data_dir, 'video_fps.json'), 'r') as json_file:
+                self.video_fps_dict = json.load(json_file)
 
         for batch in ['batch1', 'batch2', 'batch3']:
             clip14_paths = glob(os.path.join(data_dir, batch, 'clip-features-14', '*.npy'))
@@ -21,13 +27,23 @@ class Dataset:
                 task_former_path = os.path.join(data_dir, batch, 'task-former', f'{video_name}.npy')
                 self.dataset[video_name] = []
 
-                self.video_clip14_embedding_dict[video_name] = np.load(clip14_path)
-                self.video_task_former_embedding_dict[video_name] = np.load(task_former_path)
+                if (os.path.exists(clip14_path)):
+                    self.video_clip14_embedding_dict[video_name] = np.load(clip14_path)
+                else:
+                    print(f"Not exists clip-features-14 file for {video_name}")
+
+                if (os.path.exists(task_former_path)):
+                    self.video_task_former_embedding_dict[video_name] = np.load(task_former_path)
+                else:
+                    print(f"Not exists task-former file for {video_name}")
 
                 metadata_path = os.path.join(data_dir, batch, 'metadata', f'{video_name}.json')
-                with open(metadata_path, 'r') as file:
-                    json_data = json.load(file)
-                    self.video_youtube_link_dict[video_name] = json_data.get('watch_url')
+                if (os.path.exists(metadata_path)):
+                    with open(metadata_path, 'r', encoding='utf-8') as file:
+                        json_data = json.load(file)
+                        self.video_youtube_link_dict[video_name] = json_data.get('watch_url')
+                else:
+                    print(f"Not exists metadata file for {video_name}")
 
                 L = video_name[:3]
                 keyframes_paths = glob(os.path.join(data_dir, batch, "keyframes", f"keyframes_{L}", video_name, "*.jpg"))
@@ -47,4 +63,7 @@ class Dataset:
     
     def get_video_youtube_link_dict(self):
         return self.video_youtube_link_dict
+    
+    def get_video_fps_dict(self):
+        return self.video_fps_dict
                                   
