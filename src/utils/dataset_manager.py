@@ -12,9 +12,11 @@ class Dataset:
         self.video_clip14_embedding_dict = {}
         self.video_task_former_embedding_dict = {}
         self.video_youtube_link_dict = {}
+        self.video_fps_dict = {}
 
-        with open(os.path.join(data_dir, 'video_fps.json'), 'r') as json_file:
-            self.video_fps_dict = json.load(json_file)
+        if (os.path.exists(os.path.join(data_dir, 'video_fps.json'))):
+            with open(os.path.join(data_dir, 'video_fps.json'), 'r') as json_file:
+                self.video_fps_dict = json.load(json_file)
 
         for batch in ['batch1', 'batch2', 'batch3']:
             clip14_paths = glob(os.path.join(data_dir, batch, 'clip-features-14', '*.npy'))
