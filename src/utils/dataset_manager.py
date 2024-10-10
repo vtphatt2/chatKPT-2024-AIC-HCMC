@@ -27,13 +27,23 @@ class Dataset:
                 task_former_path = os.path.join(data_dir, batch, 'task-former', f'{video_name}.npy')
                 self.dataset[video_name] = []
 
-                self.video_clip14_embedding_dict[video_name] = np.load(clip14_path)
-                self.video_task_former_embedding_dict[video_name] = np.load(task_former_path)
+                if (os.path.exists(clip14_path)):
+                    self.video_clip14_embedding_dict[video_name] = np.load(clip14_path)
+                else:
+                    print(f"Not exists clip-features-14 file for {video_name}")
+
+                if (os.path.exists(task_former_path)):
+                    self.video_task_former_embedding_dict[video_name] = np.load(task_former_path)
+                else:
+                    print(f"Not exists task-former file for {video_name}")
 
                 metadata_path = os.path.join(data_dir, batch, 'metadata', f'{video_name}.json')
-                with open(metadata_path, 'r') as file:
-                    json_data = json.load(file)
-                    self.video_youtube_link_dict[video_name] = json_data.get('watch_url')
+                if (os.path.exists(metadata_path)):
+                    with open(metadata_path, 'r') as file:
+                        json_data = json.load(file)
+                        self.video_youtube_link_dict[video_name] = json_data.get('watch_url')
+                else:
+                    print(f"Not exists metadata file for {video_name}")
 
                 L = video_name[:3]
                 keyframes_paths = glob(os.path.join(data_dir, batch, "keyframes", f"keyframes_{L}", video_name, "*.jpg"))
