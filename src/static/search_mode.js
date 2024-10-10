@@ -55,6 +55,7 @@ function searchByText() {
     const searchBtn = document.getElementById("searchBtn1"); // Đảm bảo ID đúng với nút Search của bạn
     const discardedVideos = document.getElementById('discarded_videos').value;
     const newFileName = document.getElementById('new_file_name').value;
+    const keywords = document.getElementById('keywords').value;
 
     // Vô hiệu hóa nút Search
     searchBtn.disabled = true;
@@ -75,7 +76,8 @@ function searchByText() {
         body: JSON.stringify({ 
             searchText: searchText, 
             discardedVideos: discardedVideos,
-            newFileName: newFileName
+            newFileName: newFileName,
+            keywords: keywords
         })
     })
     .then(response => {
