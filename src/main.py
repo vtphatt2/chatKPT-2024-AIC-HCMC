@@ -62,7 +62,7 @@ def searchByText(text_query, k = 100, discarded_videos = "", output_file = "", k
 
     video_youtube_link_dict = dataset_manager.get_video_youtube_link_dict()
     video_fps_dict = dataset_manager.get_video_fps_dict()
-    video_transcipt = dataset_manager.get_video_transcript()
+    video_transcript = dataset_manager.get_video_transcript()
     visited = [False] * k
     for i in range(0, k):
         if (not visited[i]):
@@ -71,12 +71,13 @@ def searchByText(text_query, k = 100, discarded_videos = "", output_file = "", k
             visited[i] = True
             video_name = results[i][0]
             
+            transcript = utils.concatenate_surrounding_strings(video_transcript[video_name], dataset[video_name][results[i][1]]['frame_id'], video_fps_dict[video_name])
             if (len(keywords_list) != 0):
-                keywords_cnt = utils.count_substrings(utils.concatenate_surrounding_strings(video_transcipt[video_name], dataset[video_name][results[i][1]]['frame_id'], video_fps_dict[video_name]), keywords_list)
+                keywords_cnt = utils.count_substrings(transcript, keywords_list)
                 if (keywords_cnt == 0):
                     continue
 
-            x = [video_name, video_youtube_link_dict[video_name], [(dataset[video_name][results[i][1]]['filepath'], dataset[video_name][results[i][1]]['frame_id'])], video_fps_dict[video_name]]
+            x = [video_name, video_youtube_link_dict[video_name], [(dataset[video_name][results[i][1]]['filepath'], dataset[video_name][results[i][1]]['frame_id'])], video_fps_dict[video_name], transcript]
 
             if (output_file != "" and output_file.endswith('.csv')):
                 with open(output_file, 'a') as file:
@@ -156,15 +157,16 @@ def temporalSearch(text_first_this, text_then_that, k = 100, range_size = 8, dis
 
     video_youtube_link_dict = dataset_manager.get_video_youtube_link_dict()
     video_fps_dict = dataset_manager.get_video_fps_dict()
-    video_transcipt = dataset_manager.get_video_transcript()
+    video_transcript = dataset_manager.get_video_transcript()
     dataset = dataset_manager.get_dataset()
     for similarity, video_name, best_index in top_results:
+        transcript = utils.concatenate_surrounding_strings(video_transcript[video_name], dataset[video_name][best_index]['frame_id'], video_fps_dict[video_name])
         if (len(keywords_list) != 0):
-            keywords_cnt = utils.count_substrings(utils.concatenate_surrounding_strings(video_transcipt[video_name], dataset[video_name][best_index]['frame_id'], video_fps_dict[video_name]), keywords_list)
+            keywords_cnt = utils.count_substrings(transcript, keywords_list)
             if (keywords_cnt == 0):
                 continue
 
-        x = [video_name, video_youtube_link_dict[video_name], [], video_fps_dict[video_name]]
+        x = [video_name, video_youtube_link_dict[video_name], [], video_fps_dict[video_name], transcript]
         if (output_file != "" and output_file.endswith('.csv')):
             with open(output_file, 'a') as file:
                 file.write(f"{video_name},{dataset[video_name][best_index + int(0.12 * range_size)]['frame_id']}\n")        
@@ -174,11 +176,14 @@ def temporalSearch(text_first_this, text_then_that, k = 100, range_size = 8, dis
     
     return submission_list
 
-def searchByTextAndSketch(text_query, sketch_image, k = 200, discarded_videos = "", output_file = ""):
+def searchByTextAndSketch(text_query, sketch_image, k = 200, discarded_videos = "", output_file = "", keywords = ""):
     submission_list = []
     embedding = [model_task_former.inference(text_query, sketch_image)]
 
     discarded_set = set(video.strip() for video in discarded_videos.split(','))
+    keywords_list = []
+    if (keywords != ""):
+        keywords_list = keywords.split(',')
 
     dataset = dataset_manager.get_dataset()
     results = []
@@ -199,6 +204,7 @@ def searchByTextAndSketch(text_query, sketch_image, k = 200, discarded_videos = 
 
     video_youtube_link_dict = dataset_manager.get_video_youtube_link_dict()
     video_fps_dict = dataset_manager.get_video_fps_dict()
+    video_transcript = dataset_manager.get_video_transcript()
     visited = [False] * k
     for i in range(0, k):
         if (not visited[i]):
@@ -206,7 +212,14 @@ def searchByTextAndSketch(text_query, sketch_image, k = 200, discarded_videos = 
             right = results[i][1]
             visited[i] = True
             video_name = results[i][0]
-            x = [video_name, video_youtube_link_dict[video_name], [(dataset[video_name][results[i][1]]['filepath'], dataset[video_name][results[i][1]]['frame_id'])], video_fps_dict[video_name]]
+
+            transcript = utils.concatenate_surrounding_strings(video_transcript[video_name], dataset[video_name][results[i][1]]['frame_id'], video_fps_dict[video_name])
+            if (len(keywords_list) != 0):
+                keywords_cnt = utils.count_substrings(transcript, keywords_list)
+                if (keywords_cnt == 0):
+                    continue
+
+            x = [video_name, video_youtube_link_dict[video_name], [(dataset[video_name][results[i][1]]['filepath'], dataset[video_name][results[i][1]]['frame_id'])], video_fps_dict[video_name], transcript]
 
             if (output_file != "" and output_file.endswith('.csv')):
                 with open(output_file, 'a') as file:
@@ -300,6 +313,8 @@ def search_by_text_and_sketch():
     sketch_image = data.get('sketch')
     discarded_videos = data.get('discardedVideos')
     new_file_name = data.get('newFileName')
+    keywords = data.get('keywords')
+    k = int(data.get('k'))
 
     translated_text = translator.translate(text_query)
 
@@ -311,7 +326,7 @@ def search_by_text_and_sketch():
         # Lưu ảnh để kiểm tra (tùy chọn)
         sketch_image.save("received_sketch.png")
         
-    submission_list = searchByTextAndSketch(translated_text, sketch_image, k=100, discarded_videos=discarded_videos, output_file=new_file_name)
+    submission_list = searchByTextAndSketch(translated_text, sketch_image, k=k, discarded_videos=discarded_videos, output_file=new_file_name, keywords=keywords)
 
     # Prepare and return the response
     response = jsonify({

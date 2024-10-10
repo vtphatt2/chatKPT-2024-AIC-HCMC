@@ -47,7 +47,13 @@ function performTemporalSearch() {
 
         const submissionList = data.submission_list;
 
-        submissionList.forEach(([videoName, video_link, images, fps], groupIndex) => {
+        submissionList.forEach(([videoName, video_link, images, fps, transcript], groupIndex) => {
+            const transcriptText = document.createElement('p');
+            transcriptText.innerText = transcript;
+            transcriptText.style.marginTop = '-5px';
+            transcriptText.style.marginBottom = '-5px';
+            transcriptText.style.fontSize = '12px';
+
             // Create a container for each video section
             const videoSection = document.createElement('div');
             videoSection.classList.add('video-section');
@@ -93,6 +99,7 @@ function performTemporalSearch() {
             });
 
             videoSection.appendChild(scrollContainer);
+            searchResultContainer.appendChild(transcriptText);
             searchResultContainer.appendChild(videoSection);
         });
 
