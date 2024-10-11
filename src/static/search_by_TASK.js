@@ -6,6 +6,18 @@ function performTASKformerSearch() {
     const translatedText = document.getElementById("translated_text_TASKformer");
     const discardedVideos = document.getElementById('discarded_videos').value;
     const newFileName = document.getElementById('new_file_name').value;
+    const keywords = document.getElementById('keywords').value;
+    const k = document.getElementById('k').value;
+    let value;
+    if (k !== '' && !isNaN(k)) {
+        value = parseInt(k, 10);
+    } 
+    else if (keywords !== '') {
+        value = 500;
+    }
+    else {
+        value = 100;
+    }
 
     // Show loading state if needed
     translatedText.innerText = "Processing search by text and sketch...";
@@ -20,7 +32,9 @@ function performTASKformerSearch() {
             sketch: sketch,
             translatedText: translatedText,
             discardedVideos: discardedVideos,
-            newFileName: newFileName
+            newFileName: newFileName,
+            keywords: keywords,
+            k: value
         })
     })
     .then(response => response.json())
@@ -34,7 +48,13 @@ function performTASKformerSearch() {
 
         const submissionList = data.submission_list;
 
-        submissionList.forEach(([videoName, video_link, images, fps], groupIndex) => {
+        submissionList.forEach(([videoName, video_link, images, fps, transcript], groupIndex) => {
+            const transcriptText = document.createElement('p');
+            transcriptText.innerText = transcript;
+            transcriptText.style.marginTop = '-5px';
+            transcriptText.style.marginBottom = '-5px';
+            transcriptText.style.fontSize = '12px';
+
             // Create a container for each video section
             const videoSection = document.createElement('div');
             videoSection.classList.add('video-section');
@@ -64,7 +84,8 @@ function performTASKformerSearch() {
                 imageItem.classList.add('image-item');
 
                 const imgElement = document.createElement('img');
-                imgElement.src = `/image/${imagePath.substring(1)}`;  // Serve the image via the /image/<path>
+                const normalizedImagePath = imagePath.startsWith('/') ? imagePath.substring(1) : imagePath;
+                imgElement.src = `/image/${normalizedImagePath}`; 
                 imgElement.alt = `Frame ${frameId}`;
                 imgElement.style.width = '300px';  // Set initial width
                 imgElement.style.height = 'auto';   // Set initial height
@@ -80,6 +101,7 @@ function performTASKformerSearch() {
             });
 
             videoSection.appendChild(scrollContainer);
+            searchResultContainer.appendChild(transcriptText);
             searchResultContainer.appendChild(videoSection);
         });
 

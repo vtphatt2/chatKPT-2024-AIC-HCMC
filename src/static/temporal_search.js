@@ -6,6 +6,18 @@ function performTemporalSearch() {
     const translatedFirstThisElement = document.getElementById("translated_text_for_temporal_search");
     const discardedVideos = document.getElementById('discarded_videos').value;
     const newFileName = document.getElementById('new_file_name').value;
+    const keywords = document.getElementById('keywords').value;
+    const k = document.getElementById('k').value;
+    let value;
+    if (k !== '' && !isNaN(k)) {
+        value = parseInt(k, 10);
+    } 
+    else if (keywords !== '') {
+        value = 500;
+    }
+    else {
+        value = 100;
+    }
 
     // Show loading state if needed
     translatedFirstThisElement.innerText = "Processing temporal search...";
@@ -19,7 +31,9 @@ function performTemporalSearch() {
             textFirstThis: textFirstThis, 
             textThenThat: textThenThat,
             discardedVideos: discardedVideos,
-            newFileName: newFileName
+            newFileName: newFileName,
+            keywords: keywords,
+            k: value
         })
     })
     .then(response => response.json())
@@ -33,7 +47,13 @@ function performTemporalSearch() {
 
         const submissionList = data.submission_list;
 
-        submissionList.forEach(([videoName, video_link, images, fps], groupIndex) => {
+        submissionList.forEach(([videoName, video_link, images, fps, transcript], groupIndex) => {
+            const transcriptText = document.createElement('p');
+            transcriptText.innerText = transcript;
+            transcriptText.style.marginTop = '-5px';
+            transcriptText.style.marginBottom = '-5px';
+            transcriptText.style.fontSize = '12px';
+
             // Create a container for each video section
             const videoSection = document.createElement('div');
             videoSection.classList.add('video-section');
@@ -63,7 +83,8 @@ function performTemporalSearch() {
                 imageItem.classList.add('image-item');
 
                 const imgElement = document.createElement('img');
-                imgElement.src = `/image/${imagePath.substring(1)}`;  // Serve the image via the /image/<path>
+                const normalizedImagePath = imagePath.startsWith('/') ? imagePath.substring(1) : imagePath;
+                imgElement.src = `/image/${normalizedImagePath}`; 
                 imgElement.alt = `Frame ${frameId}`;
                 imgElement.style.width = '300px';  // Set initial width
                 imgElement.style.height = 'auto';   // Set initial height
@@ -79,6 +100,7 @@ function performTemporalSearch() {
             });
 
             videoSection.appendChild(scrollContainer);
+            searchResultContainer.appendChild(transcriptText);
             searchResultContainer.appendChild(videoSection);
         });
 

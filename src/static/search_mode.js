@@ -55,6 +55,18 @@ function searchByText() {
     const searchBtn = document.getElementById("searchBtn1"); // Đảm bảo ID đúng với nút Search của bạn
     const discardedVideos = document.getElementById('discarded_videos').value;
     const newFileName = document.getElementById('new_file_name').value;
+    const keywords = document.getElementById('keywords').value;
+    const k = document.getElementById('k').value;
+    let value;
+    if (k !== '' && !isNaN(k)) {
+        value = parseInt(k, 10);
+    } 
+    else if (keywords !== '') {
+        value = 500;
+    }
+    else {
+        value = 100;
+    }
 
     // Vô hiệu hóa nút Search
     searchBtn.disabled = true;
@@ -75,7 +87,9 @@ function searchByText() {
         body: JSON.stringify({ 
             searchText: searchText, 
             discardedVideos: discardedVideos,
-            newFileName: newFileName
+            newFileName: newFileName,
+            keywords: keywords,
+            k: value
         })
     })
     .then(response => {
@@ -108,7 +122,13 @@ function searchByText() {
         localStorage.setItem('lastSearch', JSON.stringify(searchData));
 
         // Loop through each [videoName, images] pair and dynamically create the scrollable image list
-        submissionList.forEach(([videoName, video_link, images, fps], groupIndex) => {
+        submissionList.forEach(([videoName, video_link, images, fps, transcript], groupIndex) => {      
+            const transcriptText = document.createElement('p');
+            transcriptText.innerText = transcript;
+            transcriptText.style.marginTop = '-5px';
+            transcriptText.style.marginBottom = '-5px';
+            transcriptText.style.fontSize = '12px';
+
             // Create a container for each video section
             const videoSection = document.createElement('div');
             videoSection.classList.add('video-section');
@@ -138,7 +158,8 @@ function searchByText() {
                 imageItem.classList.add('image-item');
 
                 const imgElement = document.createElement('img');
-                imgElement.src = `/image/${imagePath.substring(1)}`;  // Serve the image via the /image/<path>
+                const normalizedImagePath = imagePath.startsWith('/') ? imagePath.substring(1) : imagePath;
+                imgElement.src = `/image/${normalizedImagePath}`; 
                 imgElement.alt = `Frame ${frameId}`;
                 imgElement.style.width = '300px';  // Set initial width
                 imgElement.style.height = 'auto';   // Set initial height
@@ -154,6 +175,7 @@ function searchByText() {
             });
 
             videoSection.appendChild(scrollContainer);
+            searchResultContainer.appendChild(transcriptText);
             searchResultContainer.appendChild(videoSection);
         });
 

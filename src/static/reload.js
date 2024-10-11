@@ -73,7 +73,13 @@ function restoreSearchResults(submissionList) {
     const searchResultContainer = document.getElementById('search-result');
     searchResultContainer.innerHTML = ''; // Clear previous search result
 
-    submissionList.forEach(([videoName, video_link, images], groupIndex) => {
+    submissionList.forEach(([videoName, video_link, images, fps, transcript], groupIndex) => {
+        const transcriptText = document.createElement('p');
+        transcriptText.innerText = transcript;
+        transcriptText.style.marginTop = '-5px';
+        transcriptText.style.marginBottom = '-5px';
+        transcriptText.style.fontSize = '12px';
+
         // Create a container for each video section
         const videoSection = document.createElement('div');
         videoSection.classList.add('video-section');
@@ -85,7 +91,7 @@ function restoreSearchResults(submissionList) {
         videoSection.appendChild(videoHeader);
 
         const videoLink = document.createElement('a');
-        videoLink.href = `${video_link}&t=${Math.floor(images[0][1] / 25)}s`;  // Set the link to point to the video
+        videoLink.href = `${video_link}&t=${Math.floor(images[0][1] / fps)}s`;  // Set the link to point to the video
         videoLink.innerText = "Watch full video";  // Text displayed for the link
         videoLink.target = "_blank";  // Open link in a new tab
         videoLink.style.textDecoration = "none";  // Remove underline
@@ -119,6 +125,7 @@ function restoreSearchResults(submissionList) {
         });
 
         videoSection.appendChild(scrollContainer);
+        searchResultContainer.appendChild(transcriptText);
         searchResultContainer.appendChild(videoSection);
     });
 }
