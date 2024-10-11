@@ -84,7 +84,7 @@ function performTASKformerSearch() {
                 imageItem.classList.add('image-item');
 
                 const imgElement = document.createElement('img');
-                const normalizedImagePath = imagePath.startsWith('/') ? imagePath.substring(1) : imagePath;
+                const normalizedImagePath = imagePath.replace(/^[A-Za-z]:\\|^\//, '').replace(/\\/g, '/');
                 imgElement.src = `/image/${normalizedImagePath}`; 
                 imgElement.alt = `Frame ${frameId}`;
                 imgElement.style.width = '300px';  // Set initial width

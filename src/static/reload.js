@@ -109,7 +109,7 @@ function restoreSearchResults(submissionList) {
             imageItem.classList.add('image-item');
 
             const imgElement = document.createElement('img');
-            imgElement.src = `/image/${imagePath.substring(1)}`;  // Serve the image via the /image/<path>
+            const normalizedImagePath = imagePath.replace(/^[A-Za-z]:\\|^\//, '').replace(/\\/g, '/');
             imgElement.alt = `Frame ${frameId}`;
             imgElement.style.width = '300px';  // Set initial width
             imgElement.style.height = 'auto';   // Set initial height
