@@ -89,6 +89,17 @@ function performTemporalSearch() {
                 imgElement.style.width = '300px';  // Set initial width
                 imgElement.style.height = 'auto';   // Set initial height
                 imgElement.onclick = function() { toggleZoom(imgElement); };
+                imgElement.ondblclick = function() {                
+                    if (imgElement.classList.contains('selected-image')) {
+                        // Nếu đã được chọn, thì bỏ chọn (xóa viền đỏ)
+                        imgElement.classList.remove('selected-image');
+                        imgElement.style.border = 'none';  // Xóa viền đỏ khi ảnh bị bỏ chọn
+                    } else {
+                        // Nếu chưa được chọn, thì chọn ảnh (thêm viền đỏ)
+                        imgElement.classList.add('selected-image');
+                        imgElement.style.border = '2px solid red';  // Thêm viền đỏ khi ảnh được chọn
+                    }
+                };
 
                 const caption = document.createElement('div');
                 caption.classList.add('image-caption');

@@ -14,8 +14,8 @@ from PIL import Image
 SUBMISSION_FOLDER = os.path.join("..", "submission")
 
 print("[2] Load dataset")
-data_dir = os.path.join(os.getcwd(), '..', 'data') # link to 'data' folder, remember to organize as described in Github
-# data_dir = '/Users/VoThinhPhat/Desktop/data'
+# data_dir = os.path.join(os.getcwd(), '..', 'data') # link to 'data' folder, remember to organize as described in Github
+data_dir = '/Users/VoThinhPhat/Desktop/data'
 dataset_manager = dataset_manager.Dataset(data_dir=data_dir)
 
 
@@ -62,7 +62,7 @@ def searchByText(text_query, k = 100, discarded_videos = "", output_file = "", k
 
     video_youtube_link_dict = dataset_manager.get_video_youtube_link_dict()
     video_fps_dict = dataset_manager.get_video_fps_dict()
-    video_transcript = dataset_manager.get_video_transcript()
+    video_transcript_dict = dataset_manager.get_video_transcript_dict()
     visited = [False] * k
     for i in range(0, k):
         if (not visited[i]):
@@ -71,7 +71,7 @@ def searchByText(text_query, k = 100, discarded_videos = "", output_file = "", k
             visited[i] = True
             video_name = results[i][0]
             
-            transcript = utils.concatenate_surrounding_strings(video_transcript[video_name], dataset[video_name][results[i][1]]['frame_id'], video_fps_dict[video_name])
+            transcript = utils.concatenate_surrounding_strings(video_transcript_dict[video_name], dataset[video_name][results[i][1]]['frame_id'], video_fps_dict[video_name])
             if (len(keywords_list) != 0):
                 keywords_cnt = utils.count_substrings(transcript, keywords_list)
                 if (keywords_cnt == 0):
@@ -157,10 +157,10 @@ def temporalSearch(text_first_this, text_then_that, k = 100, range_size = 8, dis
 
     video_youtube_link_dict = dataset_manager.get_video_youtube_link_dict()
     video_fps_dict = dataset_manager.get_video_fps_dict()
-    video_transcript = dataset_manager.get_video_transcript()
+    video_transcript_dict = dataset_manager.get_video_transcript_dict()
     dataset = dataset_manager.get_dataset()
     for similarity, video_name, best_index in top_results:
-        transcript = utils.concatenate_surrounding_strings(video_transcript[video_name], dataset[video_name][best_index]['frame_id'], video_fps_dict[video_name])
+        transcript = utils.concatenate_surrounding_strings(video_transcript_dict[video_name], dataset[video_name][best_index]['frame_id'], video_fps_dict[video_name])
         if (len(keywords_list) != 0):
             keywords_cnt = utils.count_substrings(transcript, keywords_list)
             if (keywords_cnt == 0):
@@ -204,7 +204,7 @@ def searchByTextAndSketch(text_query, sketch_image, k = 200, discarded_videos = 
 
     video_youtube_link_dict = dataset_manager.get_video_youtube_link_dict()
     video_fps_dict = dataset_manager.get_video_fps_dict()
-    video_transcript = dataset_manager.get_video_transcript()
+    video_transcript_dict = dataset_manager.get_video_transcript_dict()
     visited = [False] * k
     for i in range(0, k):
         if (not visited[i]):
@@ -213,7 +213,7 @@ def searchByTextAndSketch(text_query, sketch_image, k = 200, discarded_videos = 
             visited[i] = True
             video_name = results[i][0]
 
-            transcript = utils.concatenate_surrounding_strings(video_transcript[video_name], dataset[video_name][results[i][1]]['frame_id'], video_fps_dict[video_name])
+            transcript = utils.concatenate_surrounding_strings(video_transcript_dict[video_name], dataset[video_name][results[i][1]]['frame_id'], video_fps_dict[video_name])
             if (len(keywords_list) != 0):
                 keywords_cnt = utils.count_substrings(transcript, keywords_list)
                 if (keywords_cnt == 0):
@@ -337,6 +337,62 @@ def search_by_text_and_sketch():
     response.headers['Pragma'] = 'no-cache'
     response.headers['Expires'] = '0'
 
+    return response, 200
+
+@app.route('/find_similar_images', methods=['POST'])
+def find_similar_images():
+    data = request.json
+    selectedImagesList = data.get('selectedImagesList')
+    k = data.get('k')
+
+    dataset = dataset_manager.get_dataset()
+    video_clip14_embedding_dict =  dataset_manager.get_video_clip14_embedding_dict()
+    representative_score = np.zeros(768, dtype=np.float32)
+    for item in selectedImagesList:
+        video_name = item.get('video_name').rsplit(os.sep, 2)[-2]
+        frame_id = int(item.get('frame_id'))
+        index = 0
+        while (index < len(dataset[video_name]) and dataset[video_name][index]['frame_id'] != frame_id):
+            index += 1
+        representative_score += video_clip14_embedding_dict[video_name][index]
+
+    results = []
+    for video_name, embeddings_array in video_clip14_embedding_dict.items():            
+        sim_scores = cosine_similarity([representative_score], embeddings_array).flatten()
+        for index, score in enumerate(sim_scores):
+            results.append((video_name, index, score))
+
+    results.sort(key=lambda item: item[2], reverse=True)
+
+    submission_list = []
+    video_youtube_link_dict = dataset_manager.get_video_youtube_link_dict()
+    video_fps_dict = dataset_manager.get_video_fps_dict()
+    video_transcript_dict = dataset_manager.get_video_transcript_dict()
+    visited = [False] * k
+    for i in range(0, k):
+        if (not visited[i]):
+            visited[i] = True
+            video_name = results[i][0]
+            transcript = utils.concatenate_surrounding_strings(video_transcript_dict[video_name], dataset[video_name][results[i][1]]['frame_id'], video_fps_dict[video_name])
+
+            x = [video_name, video_youtube_link_dict[video_name], [(dataset[video_name][results[i][1]]['filepath'], dataset[video_name][results[i][1]]['frame_id'])], video_fps_dict[video_name], transcript]
+
+            for j in range(i + 1, k):
+                if (not visited[j] and video_name == results[j][0] and abs(results[i][1] - results[j][1]) < 12):
+                    x[2].append((dataset[video_name][results[j][1]]['filepath'], dataset[video_name][results[j][1]]['frame_id']))
+                    visited[j] = True
+
+            x[2] = sorted(x[2], key=lambda a:a[1])
+            submission_list.append(x)
+
+    # Prepare and return the response
+    response = jsonify({
+        "submission_list": submission_list
+    })
+    response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+    
     return response, 200
 
 app.run(debug=True, use_reloader=False)

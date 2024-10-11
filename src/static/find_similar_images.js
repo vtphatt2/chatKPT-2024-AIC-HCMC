@@ -1,94 +1,41 @@
-const searchText = document.getElementById('searchText');
-const temporalSearch = document.getElementById('temporalSearch');
-const textAndSketch = document.getElementById('textAndSketch');
-
-const textSearchArea = document.getElementById('textSearchArea');
-const temporalSearchArea = document.getElementById('temporalSearchArea');
-const textAndSketchArea = document.getElementById('textAndSketchArea');
-
-// Function to toggle visibility based on selection
-function toggleSearchArea() {
-    textSearchArea.style.display = 'none';
-    temporalSearchArea.style.display = 'none';
-    textAndSketchArea.style.display = 'none';
-
-    if (searchText.checked) {
-        textSearchArea.style.display = 'block';
-    } else if (temporalSearch.checked) {
-        temporalSearchArea.style.display = 'flex';
-    } else if (textAndSketch.checked) {
-        textAndSketchArea.style.display = 'flex';
-    }
-
-    // Save the selected radio button to localStorage without clearing it
-    localStorage.setItem('selectedSearchMode', document.querySelector('input[name="searchMode"]:checked').id);
-}
-
-// Function to restore the selected radio button from localStorage
-function restoreSearchMode() {
-    const savedMode = localStorage.getItem('selectedSearchMode');
-    if (savedMode) {
-        document.getElementById(savedMode).checked = true;
-        toggleSearchArea(); // Update the UI based on the saved selection
-    }
-}
-
-// Add event listeners to radio buttons
-searchText.addEventListener('change', toggleSearchArea);
-temporalSearch.addEventListener('change', toggleSearchArea);
-textAndSketch.addEventListener('change', toggleSearchArea);
-
-// Restore the previous selection on page load
-document.addEventListener('DOMContentLoaded', restoreSearchMode);
-
-
-function clearText() {
-    document.getElementById("searchTextArea").value = "";
-    document.getElementById("text_first_this_area").value = "";
-    document.getElementById("text_then_that_area").value = "";
-}
-
-function searchByText() {
-    const searchText = document.getElementById('searchTextArea').value;
-    const translatedTextElement = document.getElementById("translated_text_for_search_by_text");
-    const loadingSpinner = document.getElementById("loadingSpinner");
-    const searchBtn = document.getElementById("searchBtn1"); // Đảm bảo ID đúng với nút Search của bạn
+function findSimilarImages() {
+    const searchBtn = document.getElementById("findSimilarBtn"); // Đảm bảo ID đúng với nút Search của bạn
     const discardedVideos = document.getElementById('discarded_videos').value;
-    const newFileName = document.getElementById('new_file_name').value;
-    const keywords = document.getElementById('keywords').value;
-    const k = document.getElementById('k').value;
+    const selectedImages = document.querySelectorAll('.selected-image');
+    const k = document.getElementById('k_for_search_similar_images').value;
     let value;
-    if (k !== '' && !isNaN(k)) {
-        value = parseInt(k, 10);
-    } 
-    else if (keywords !== '') {
-        value = 500;
+    if (k == '') {
+        value = 100
     }
     else {
-        value = 100;
+        value = parseInt(k, 10);
     }
 
     // Vô hiệu hóa nút Search
-    searchBtn.disabled = true;
-    searchBtn.style.cursor = "not-allowed";
-    searchBtn.style.opacity = "0.6"; // Thay đổi độ mờ để thể hiện nút đã bị vô hiệu hóa
+    // searchBtn.disabled = true;
+    // searchBtn.style.cursor = "not-allowed";
+    // searchBtn.style.opacity = "0.6"; // Thay đổi độ mờ để thể hiện nút đã bị vô hiệu hóa
 
-    // Hiển thị thông báo "Đang xử lý..." và spinner
-    translatedTextElement.innerText = "Processing search by Text...";
-    if (loadingSpinner) {
-        loadingSpinner.style.display = "inline-block"; // Hiển thị spinner nếu có
-    }
+    const selectedImagesList = [];
 
-    fetch('/search_by_text', {
+    selectedImages.forEach(img => {
+        const video = img.src;  // Assuming video info is stored in 'data-video'
+        const frameId = img.alt.replace('Frame ', ''); // Extract frameId from the 'alt' attribute
+        
+        // Add video and frameId info to the submission list
+        selectedImagesList.push({
+            video_name: video,
+            frame_id: frameId
+        });
+    });
+
+    fetch('/find_similar_images', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ 
-            searchText: searchText, 
-            discardedVideos: discardedVideos,
-            newFileName: newFileName,
-            keywords: keywords,
+        body: JSON.stringify({
+            selectedImagesList: selectedImagesList,
             k: value
         })
     })
@@ -102,10 +49,10 @@ function searchByText() {
         console.log('Success:', data);  // Log the response for debugging
 
         // Cập nhật phần tử với văn bản đã dịch
-        translatedTextElement.innerText = data.translated_text; 
-        if (loadingSpinner) {
-            loadingSpinner.style.display = "none"; // Ẩn spinner
-        }
+        // translatedTextElement.innerText = data.translated_text; 
+        // if (loadingSpinner) {
+        //     loadingSpinner.style.display = "none"; // Ẩn spinner
+        // }
 
         const searchResultContainer = document.getElementById('search-result');
         searchResultContainer.innerHTML = ''; // Clear previous search result
@@ -208,4 +155,3 @@ function searchByText() {
         searchBtn.style.opacity = "1"; 
     });
 }
-

@@ -13,7 +13,7 @@ class Dataset:
         self.video_task_former_embedding_dict = {}
         self.video_youtube_link_dict = {}
         self.video_fps_dict = {}
-        self.video_transcript = {}
+        self.video_transcript_dict = {}
 
         if (os.path.exists(os.path.join(data_dir, 'video_fps.json'))):
             with open(os.path.join(data_dir, 'video_fps.json'), 'r') as json_file:
@@ -37,9 +37,9 @@ class Dataset:
 
                 if (os.path.exists(transcript_path)):
                     with open(transcript_path, 'rb') as file:
-                        self.video_transcript[video_name] = pickle.load(file)
+                        self.video_transcript_dict[video_name] = pickle.load(file)
                 else:
-                    self.video_transcript[video_name] = []
+                    self.video_transcript_dict[video_name] = []
 
                 metadata_path = os.path.join(data_dir, batch, 'metadata', f'{video_name}.json')
                 if (os.path.exists(metadata_path)):
@@ -69,6 +69,6 @@ class Dataset:
     def get_video_fps_dict(self):
         return self.video_fps_dict
     
-    def get_video_transcript(self):
-        return self.video_transcript
+    def get_video_transcript_dict(self):
+        return self.video_transcript_dict
                                   
