@@ -3,6 +3,9 @@ import cv2
 import pickle
 from paddleocr import PaddleOCR
 
+# "L01_V001", "L01_V002", "L01_V003",...
+COMPLETED = []
+
 def normalize_text(text):
     replacements = {
         'ö': 'o',
@@ -29,7 +32,6 @@ def process_image(img_path, output_dir):
     img = cv2.imread(img_path)
 
     if img is None:
-        print(f"Error: Image not found at {img_path}.")
         return
 
     result = ocr.ocr(img_path, cls=True)
@@ -59,7 +61,6 @@ def process_image(img_path, output_dir):
 def process_directory(root_path):
     # Change and rename output directory here
     output_dir = 'OCR-Objects'
-    
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
@@ -67,10 +68,23 @@ def process_directory(root_path):
         for file in filenames:
             if file.endswith('.jpg'):
                 img_path = os.path.join(dirpath, file)
+
+                video_name = os.path.basename(os.path.dirname(img_path))
+
+                if video_name in COMPLETED:
+                    print(f"Skipping {video_name} as it is already processed.")
+                    continue
+
                 process_image(img_path, output_dir)
 
     for video_name in os.listdir(output_dir):
         if video_name.endswith('.bin'):
+            video_name_no_ext = os.path.splitext(video_name)[0]
+
+            if video_name_no_ext in COMPLETED:
+                print(f"Skipping {video_name_no_ext} (bin file) as it is already processed.")
+                continue
+
             output_path = os.path.join(output_dir, video_name)
             with open(output_path, 'rb') as bin_file:
                 data = pickle.load(bin_file)
