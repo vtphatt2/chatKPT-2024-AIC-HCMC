@@ -10,8 +10,8 @@ from sklearn.neighbors import NearestNeighbors
 
 CODE_PATH = Path('code/')
 MODEL_PATH = Path('model/')
-IMAGE_PATH = Path('../keyframes/')
-SAVE_PATH = Path('../task-former/')
+IMAGE_PATH = Path('keyframes/')
+SAVE_PATH = Path('task-former/')
 os.makedirs(SAVE_PATH,exist_ok=True)
 sys.path.append(str(CODE_PATH))
 model_config_file = CODE_PATH / 'training/model_configs/ViT-B-16.json'
