@@ -7,8 +7,6 @@ from glob import glob
 import paddle
 import unicodedata
 
-data_dir = r'E:\transcripts\data\batch3'
-
 logging.getLogger("ppocr").setLevel(logging.ERROR)
 
 def remove_diacritics_and_punctuation(s):
@@ -37,7 +35,7 @@ def normalize_text(text):
     return remove_diacritics_and_punctuation(text.lower())
 
 use_gpu = paddle.is_compiled_with_cuda()
-ocr = PaddleOCR(use_angle_cls=True, lang='vi', use_gpu=use_gpu)
+ocr = PaddleOCR(use_angle_cls=True, lang='vi', use_gpu=use_gpu, batch_num=8)
 
 def process_image(img_path):
     img = cv2.imread(img_path)
@@ -52,18 +50,21 @@ def process_image(img_path):
     else:
         list_text = set()
 
+    del result
+    del img
+    paddle.device.cuda.empty_cache()
+
     return list_text
 
-output_dir = os.path.join(data_dir, 'OCR-Objects')
-os.makedirs(output_dir, exist_ok=True)
+os.makedirs('ocr', exist_ok=True)
 
-video_paths = glob(os.path.join(data_dir, 'keyframes', '*', '*'))
+video_paths = glob(os.path.join('keyframes', '*', '*'))
 video_paths.sort()
 
 for video_path in video_paths:
     video_name = video_path.rsplit(os.sep, 1)[-1]
     
-    output_file_path = os.path.join(output_dir, f'{video_name}.bin')
+    output_file_path = os.path.join('ocr', f'{video_name}.bin')
 
     if os.path.exists(output_file_path):
         continue
