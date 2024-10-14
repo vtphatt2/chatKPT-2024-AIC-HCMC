@@ -14,8 +14,8 @@ from PIL import Image
 SUBMISSION_FOLDER = os.path.join("..", "submission")
 
 print("[2] Load dataset")
-# data_dir = os.path.join(os.getcwd(), '..', 'data') # link to 'data' folder, remember to organize as described in Github
-data_dir = '/Users/VoThinhPhat/Desktop/data'
+data_dir = os.path.join(os.getcwd(), '..', 'data') # link to 'data' folder, remember to organize as described in Github
+# data_dir = '/Users/VoThinhPhat/Desktop/data'
 dataset_manager = dataset_manager.Dataset(data_dir=data_dir)
 
 
@@ -278,6 +278,33 @@ def searchByTranscript(keywords = "", k = 200,):
 
     return submission_list
 
+def searchByOCR(words = "", k = 200):
+    data = request.json
+    words = data.get('words')
+    k = data.get('k')
+
+    words = words.split(', ')
+    words = [utils.remove_diacritics_and_lowercase(word) for word in words]
+
+    submission_list = []
+
+    dataset = dataset_manager.get_dataset()
+    video_ocr_dict = dataset_manager.get_video_ocr_dict()
+    video_youtube_link_dict = dataset_manager.get_video_youtube_link_dict()
+    video_fps_dict = dataset_manager.get_video_fps_dict()
+    for video_name, words_list in video_ocr_dict.items():
+        x = [video_name, video_youtube_link_dict[video_name], [], video_fps_dict[video_name], ""]
+        for i in range(0, len(words_list)):
+            for word in words:
+                if (word in words_list[i]):
+                    img = (dataset[video_name][i]['filepath'], dataset[video_name][i]['frame_id'])
+                    x[2].append(img)
+
+        if len(x[2]) != 0:
+            submission_list.append(x)
+
+    return submission_list
+
 print("[5] Launch the local Web UI")
 app = Flask(__name__)
 
@@ -430,6 +457,19 @@ def search_by_transcript():
     keywords = data.get('keywords')
 
     submission_list = searchByTranscript(keywords, k)
+
+    response = jsonify({
+        "submission_list": submission_list
+    })
+    return response, 200
+
+@app.route('/search_by_ocr', methods=['POST'])
+def search_by_ocr():
+    data = request.json
+    k = data.get('k')
+    words = data.get('keywords')
+
+    submission_list = searchByOCR(words, k)
 
     response = jsonify({
         "submission_list": submission_list

@@ -14,6 +14,7 @@ class Dataset:
         self.video_youtube_link_dict = {}
         self.video_fps_dict = {}
         self.video_transcript_dict = {}
+        self.video_ocr_dict = {}
 
         if (os.path.exists(os.path.join(data_dir, 'video_fps.json'))):
             with open(os.path.join(data_dir, 'video_fps.json'), 'r') as json_file:
@@ -27,6 +28,7 @@ class Dataset:
                 video_name = clip14_path[:-4].rsplit(os.sep, 1)[-1]
                 task_former_path = os.path.join(data_dir, batch, 'task-former', f'{video_name}.npy')
                 transcript_path = os.path.join(data_dir, batch, 'transcript',  f'{video_name}.bin')
+                ocr_path = os.path.join(data_dir, batch, 'ocr',  f'{video_name}.bin')
                 self.dataset[video_name] = []
 
                 if (os.path.exists(clip14_path)):
@@ -41,6 +43,12 @@ class Dataset:
                 else:
                     self.video_transcript_dict[video_name] = []
 
+                if (os.path.exists(ocr_path) and os.path.getsize(ocr_path) > 0):
+                    with open(ocr_path, 'rb') as file:
+                        self.video_ocr_dict[video_name] = pickle.load(file)
+                else:
+                    self.video_ocr_dict[video_name] = []
+
                 metadata_path = os.path.join(data_dir, batch, 'metadata', f'{video_name}.json')
                 if (os.path.exists(metadata_path)):
                     with open(metadata_path, 'r', encoding='utf-8') as file:
@@ -48,7 +56,7 @@ class Dataset:
                         self.video_youtube_link_dict[video_name] = json_data.get('watch_url')
 
                 L = video_name[:3]
-                keyframes_paths = glob(os.path.join(data_dir, batch, "keyframes", f"keyframes_{L}", video_name, "*.jpg"))
+                keyframes_paths = glob(os.path.join(data_dir, batch, "keyframes", f"keyframes_{L}*", video_name, "*.jpg"))
                 keyframes_paths.sort()
 
                 for i in range(0, len(keyframes_paths)):
@@ -71,4 +79,7 @@ class Dataset:
     
     def get_video_transcript_dict(self):
         return self.video_transcript_dict
+    
+    def get_video_ocr_dict(self):
+        return self.video_ocr_dict
                                   

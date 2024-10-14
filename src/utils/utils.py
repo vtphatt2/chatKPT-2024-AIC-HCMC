@@ -81,3 +81,10 @@ def find_closest_frame_index(samples, target_frame_id):
             min_index = i
     return min_index
 
+def remove_diacritics_and_lowercase(word):
+    nfkd_form = unicodedata.normalize('NFD', word)
+    
+    without_diacritics = ''.join([c for c in nfkd_form if not unicodedata.combining(c)])
+    
+    return without_diacritics.lower()
+
