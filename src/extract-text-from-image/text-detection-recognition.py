@@ -4,6 +4,9 @@ import pickle
 from paddleocr import PaddleOCR
 import logging
 from glob import glob
+import paddle
+
+data_dir = r'E:\batch3'
 
 logging.getLogger("ppocr").setLevel(logging.ERROR)
 
@@ -27,7 +30,8 @@ def normalize_text(text):
     
     return text.lower()
 
-ocr = PaddleOCR(use_angle_cls=True, lang='vi')
+use_gpu = paddle.is_compiled_with_cuda()
+ocr = PaddleOCR(use_angle_cls=True, lang='vi', use_gpu=use_gpu)
 
 def process_image(img_path):
     img = cv2.imread(img_path)
@@ -44,17 +48,21 @@ def process_image(img_path):
 
     return list_text
 
-
-output_dir = 'OCR-Objects'
+output_dir = os.path.join(data_dir, 'OCR-Objects')
 os.makedirs(output_dir, exist_ok=True)
 
-video_paths = glob(os.path.join(os.getcwd(), 'keyframes', '*', '*'))
+video_paths = glob(os.path.join(data_dir, 'keyframes', '*', '*'))
 video_paths.sort()
 
 for video_path in video_paths:
     video_name = video_path.rsplit(os.sep, 1)[-1]
     
-    img_paths = glob(video_path, '*.jpg')
+    output_file_path = os.path.join(output_dir, f'{video_name}.bin')
+
+    if os.path.exists(output_file_path):
+        continue
+
+    img_paths = glob(os.path.join(video_path, '*.jpg'))
     img_paths.sort()
 
     frame_data = []
@@ -62,8 +70,6 @@ for video_path in video_paths:
     for img_path in img_paths:
         print(img_path)
         frame_data.append(process_image(img_path))
-
-    output_file_path = os.path.join(output_dir, f'{video_name}.bin')
 
     with open(output_file_path, 'wb') as bin_file:
         pickle.dump(frame_data, bin_file)
