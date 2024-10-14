@@ -7,7 +7,7 @@ from glob import glob
 import paddle
 import unicodedata
 
-data_dir = r'E:\batch3'
+data_dir = r'E:\transcripts\data\batch3'
 
 logging.getLogger("ppocr").setLevel(logging.ERROR)
 
