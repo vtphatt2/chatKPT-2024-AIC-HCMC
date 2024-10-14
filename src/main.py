@@ -227,7 +227,6 @@ def searchByTextAndSketch(text_query, sketch_image, k = 200, discarded_videos = 
 
             for j in range(i + 1, k):
                 if (not visited[j] and video_name == results[j][0] and abs(results[i][1] - results[j][1]) < 12):
-                    print((dataset[video_name][results[j][1]]['filepath'], dataset[video_name][results[j][1]]['frame_id']))
                     x[2].append((dataset[video_name][results[j][1]]['filepath'], dataset[video_name][results[j][1]]['frame_id']))
                     left = min(left, results[j][1])
                     right = max(right, results[j][1])
@@ -248,6 +247,35 @@ def searchByTextAndSketch(text_query, sketch_image, k = 200, discarded_videos = 
             x[2] = sorted(x[2], key=lambda a:a[1])
             submission_list.append(x)
     
+    return submission_list
+
+def searchByTranscript(keywords = "", k = 200,):
+    keywords = keywords.split(', ')
+
+    submission_list = []
+    
+    video_transcript_dict = dataset_manager.get_video_transcript_dict()
+    results = []
+    for video_name, transcript_list in video_transcript_dict.items():
+        for i in range(0, len(transcript_list) - 1, 2):
+            text = transcript_list[i][1] + " " + transcript_list[i + 1][1]
+            results.append((video_name, i, utils.count_keywords_in_string(keywords, text), text))
+    results.sort(key=lambda item: item[2], reverse=True)
+
+    dataset = dataset_manager.get_dataset()
+    video_youtube_link_dict = dataset_manager.get_video_youtube_link_dict()
+    video_fps_dict = dataset_manager.get_video_fps_dict()
+    for i in range(0, k):
+        video_name = results[i][0]
+        target_frame_id = utils.time_to_seconds(video_transcript_dict[video_name][results[i][1]][0]) * video_fps_dict[video_name]
+        x = [video_name, video_youtube_link_dict[video_name], [], video_fps_dict[video_name], results[i][3]]
+        closest_index = utils.find_closest_frame_index(dataset[video_name], target_frame_id)
+
+        for j in range(closest_index, min(closest_index + 15, len(dataset[video_name]))):
+            x[2].append((dataset[video_name][j]['filepath'], dataset[video_name][j]['frame_id']))
+            
+        submission_list.append(x)
+
     return submission_list
 
 print("[5] Launch the local Web UI")
@@ -393,6 +421,19 @@ def find_similar_images():
     response.headers['Pragma'] = 'no-cache'
     response.headers['Expires'] = '0'
     
+    return response, 200
+
+@app.route('/search_by_transcript', methods=['POST'])
+def search_by_transcript():
+    data = request.json
+    k = data.get('k')
+    keywords = data.get('keywords')
+
+    submission_list = searchByTranscript(keywords, k)
+
+    response = jsonify({
+        "submission_list": submission_list
+    })
     return response, 200
 
 app.run(debug=True, use_reloader=False)

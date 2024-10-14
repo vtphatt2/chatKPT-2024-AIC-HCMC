@@ -5,10 +5,16 @@ from paddleocr import PaddleOCR
 import logging
 from glob import glob
 import paddle
+import unicodedata
 
 data_dir = r'E:\batch3'
 
 logging.getLogger("ppocr").setLevel(logging.ERROR)
+
+def remove_diacritics_and_punctuation(s):
+    s = s.replace("'", "")
+    nkfd_form = unicodedata.normalize('NFKD', s)
+    return ''.join([c for c in nkfd_form if not unicodedata.combining(c)])
 
 def normalize_text(text):
     replacements = {
@@ -28,7 +34,7 @@ def normalize_text(text):
     for old_char, new_char in replacements.items():
         text = text.replace(old_char, new_char)
     
-    return text.lower()
+    return remove_diacritics_and_punctuation(text.lower())
 
 use_gpu = paddle.is_compiled_with_cuda()
 ocr = PaddleOCR(use_angle_cls=True, lang='vi', use_gpu=use_gpu)
@@ -68,7 +74,7 @@ for video_path in video_paths:
     frame_data = []
 
     for img_path in img_paths:
-        print(img_path)
+        print(f"OCR for {img_path}")
         frame_data.append(process_image(img_path))
 
     with open(output_file_path, 'wb') as bin_file:
