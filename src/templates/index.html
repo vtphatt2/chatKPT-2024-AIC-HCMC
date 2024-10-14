@@ -9,6 +9,8 @@
     <script src="{{ url_for('static', filename='temporal_search.js') }}"></script>
     <script src="{{ url_for('static', filename='search_by_TASK.js') }}"></script>
     <script src="{{ url_for('static', filename='find_similar_images.js') }}"></script>
+    <script src="{{ url_for('static', filename='search_by_transcript.js') }}"></script>
+    <script src="{{ url_for('static', filename='search_by_ocr.js') }}"></script>
 </head>
 <body>
     <h1 style="text-align: center;">Welcome to chatKPT's Keyframes Search System</h1>
@@ -75,9 +77,22 @@
         <textarea id="keywords" placeholder="Enter keywords (transcript)" cols="35" rows="3" 
                   style="font-size: 16px;"></textarea>
 
-        <textarea id="k" placeholder="Enter a number for k (default k = 100)" cols="35" rows="3" 
+        <textarea id="ocr" placeholder="OCR" cols="35" rows="3" 
+            style="font-size: 16px;"></textarea>
+
+        <textarea id="k" placeholder="Enter a number for k" cols="20" rows="3" 
                   style="font-size: 16px;"></textarea>
     </div>
+
+    <div style="display: flex; justify-content: center; align-items: center; margin-top: -10px;  margin-bottom: 10px; gap: 10px">
+        <button id="searchBtn4" style="font-size: 16px; padding: 10px 20px;
+            background-color: green; color: white; border: none; cursor: pointer;"
+            onclick="searchByTranscript()">Search by transcript only</button>
+
+        <button id="searchBtn5" style="font-size: 16px; padding: 10px 20px;
+            background-color: green; color: white; border: none; cursor: pointer;"
+            onclick="searchByOCR()">Search by OCR only</button>
+    </div>    
 
     <!-- Content areas that will be shown/hidden based on radio selection -->
     <div id="textSearchArea" style="display: none; margin-left: 15px;">
