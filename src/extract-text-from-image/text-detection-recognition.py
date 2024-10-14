@@ -75,3 +75,4 @@ for video_path in video_paths:
         pickle.dump(frame_data, bin_file)
 
     print(f"Completed: {output_file_path}")
+
