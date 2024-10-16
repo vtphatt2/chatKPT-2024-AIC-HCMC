@@ -122,12 +122,12 @@ function performTASKformerSearch() {
                 // Right-click event for selecting only one image with a blue border
                 imgElement.oncontextmenu = function (event) {
                     event.preventDefault();
-    
+                
                     // Bỏ chọn viền xanh từ tất cả các ảnh
                     document.querySelectorAll('.selected-submit-image').forEach(img => {
                         img.classList.remove('selected-submit-image');
                     });
-    
+                
                     // Toggle viền xanh cho ảnh hiện tại
                     if (imgElement.classList.contains('selected-submit-image')) {
                         imgElement.classList.remove('selected-submit-image');
@@ -135,6 +135,10 @@ function performTASKformerSearch() {
                         imgElement.classList.add('selected-submit-image');
                         // Tuỳ chọn: bỏ chọn viền đỏ nếu muốn
                         imgElement.classList.remove('selected-image');
+                        
+                        // Tự động điền video_name và frame_id
+                        document.getElementById('video_name').value = videoName;  // videoName from the submission list
+                        document.getElementById('frame_id').value = frameId;  // frameId of the image
                     }
                 };
 

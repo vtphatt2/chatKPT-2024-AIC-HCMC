@@ -91,16 +91,53 @@ function performTemporalSearch() {
                 imgElement.alt = `Frame ${frameId}`;
                 imgElement.style.width = '300px';  // Set initial width
                 imgElement.style.height = 'auto';   // Set initial height
-                imgElement.onclick = function() { toggleZoom(imgElement); };
-                imgElement.ondblclick = function() {                
-                    if (imgElement.classList.contains('selected-image')) {
-                        // Nếu đã được chọn, thì bỏ chọn (xóa viền đỏ)
-                        imgElement.classList.remove('selected-image');
-                        imgElement.style.border = 'none';  // Xóa viền đỏ khi ảnh bị bỏ chọn
+                imgElement.onclick = function (event) {
+                    // Nếu đã có timer, không làm gì
+                    if (clickTimers.has(imgElement)) return;
+    
+                    const timer = setTimeout(() => {
+                        // Single-click action: toggle red border
+                        if (imgElement.classList.contains('selected-image')) {
+                            imgElement.classList.remove('selected-image');
+                        } else {
+                            imgElement.classList.add('selected-image');
+                        }
+                        clickTimers.delete(imgElement);
+                    }, 250); // Thời gian chờ để phân biệt single và double-click
+    
+                    clickTimers.set(imgElement, timer);
+                };
+    
+                // Double-click event for zooming the image
+                imgElement.ondblclick = function () {
+                    // Nếu có timer đang chờ, hủy bỏ nó
+                    if (clickTimers.has(imgElement)) {
+                        clearTimeout(clickTimers.get(imgElement));
+                        clickTimers.delete(imgElement);
+                    }
+                    toggleZoom(imgElement);
+                };
+    
+                // Right-click event for selecting only one image with a blue border
+                imgElement.oncontextmenu = function (event) {
+                    event.preventDefault();
+                
+                    // Bỏ chọn viền xanh từ tất cả các ảnh
+                    document.querySelectorAll('.selected-submit-image').forEach(img => {
+                        img.classList.remove('selected-submit-image');
+                    });
+                
+                    // Toggle viền xanh cho ảnh hiện tại
+                    if (imgElement.classList.contains('selected-submit-image')) {
+                        imgElement.classList.remove('selected-submit-image');
                     } else {
-                        // Nếu chưa được chọn, thì chọn ảnh (thêm viền đỏ)
-                        imgElement.classList.add('selected-image');
-                        imgElement.style.border = '2px solid red';  // Thêm viền đỏ khi ảnh được chọn
+                        imgElement.classList.add('selected-submit-image');
+                        // Tuỳ chọn: bỏ chọn viền đỏ nếu muốn
+                        imgElement.classList.remove('selected-image');
+                        
+                        // Tự động điền video_name và frame_id
+                        document.getElementById('video_name').value = videoName;  // videoName from the submission list
+                        document.getElementById('frame_id').value = frameId;  // frameId of the image
                     }
                 };
 

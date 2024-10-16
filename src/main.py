@@ -1,3 +1,17 @@
+from login import getSessionID, getEvaluationID
+import getpass
+
+username = input("Enter your username: ")
+password = getpass.getpass("Enter your password: ")
+session_id = getSessionID.get_session_id(username, password)
+if session_id:
+    print(f"Login successful! Your session ID is: {session_id}")
+    evaluation_id = getEvaluationID.get_evaluation_id(session_id)
+    if evaluation_id:
+        print(f"First evaluation ID: {evaluation_id}")
+else:
+    print("Failed to retrieve the session ID.")
+
 print("[1] Load libraries")
 from utils import dataset_manager, model_manager
 from utils import utils
@@ -14,8 +28,8 @@ from PIL import Image
 SUBMISSION_FOLDER = os.path.join("..", "submission")
 
 print("[2] Load dataset")
-# data_dir = os.path.join(os.getcwd(), '..', 'data') # link to 'data' folder, remember to organize as described in Github
-data_dir = '/Users/VoThinhPhat/Desktop/data'
+data_dir = os.path.join(os.getcwd(), '..', 'data') # link to 'data' folder, remember to organize as described in Github
+# data_dir = '/Users/VoThinhPhat/Desktop/data'
 dataset_manager = dataset_manager.Dataset(data_dir=data_dir)
 
 
@@ -441,6 +455,18 @@ def search_by_ocr():
     })
     return response, 200
 
+@app.route('/submit_to_system', methods=['POST'])
+def submit_to_system():
+    data = request.json
+    video_name = data.get('video_name')
+    video_fps_dict = dataset_manager.get_video_fps_dict()
+
+    response = jsonify({
+        "session_id": session_id,
+        "evaluation_id": evaluation_id,
+        "fps": video_fps_dict[video_name]
+    })
+    return response, 200
 
 
 app.run(debug=True, use_reloader=False)

@@ -11,11 +11,36 @@
     <script src="{{ url_for('static', filename='find_similar_images.js') }}"></script>
     <script src="{{ url_for('static', filename='search_by_transcript.js') }}"></script>
     <script src="{{ url_for('static', filename='search_by_ocr.js') }}"></script>
+    <script src="{{ url_for('static', filename='submit.js') }}"></script>
 </head>
 <body>
     <h1 style="text-align: center;">Welcome to chatKPT's Keyframes Search System</h1>
     <p style="text-align: center;">This is the system developed by chatKPT for The 2024 AI Challenge Ho Chi Minh City</p>
 
+    <h2 style="margin-left: 80px;">Submission</h2>
+    <div style="display: flex; gap: 10px; margin-left: 30px;">
+        <input type="radio" id="kis" name="submit_type" value="KIS Submit" checked>
+        <label for="kis">KIS Submit</label><br>
+    
+        <input type="radio" id="qa" name="submit_type" value="QA Submit">
+        <label for="qa">QA Submit</label><br>
+
+        <textarea id="video_name" placeholder="Enter video name" cols="20" rows="1" 
+            style="font-size: 16px;"></textarea>
+
+
+        <textarea id="frame_id" placeholder="Enter frame id" cols="20" rows="1" 
+        style="font-size: 16px;"></textarea>
+
+        <textarea id="answer" placeholder="Enter answer (QA submit)" cols="20" rows="1" 
+        style="font-size: 16px;"></textarea>
+
+        <button id="submit_button" style="font-size: 16px; padding: 10px 20px; 
+                background-color: red; color: white; border: none; cursor: pointer;"
+                onclick="submitToSystem()">Submit to system</button>
+    </div>
+    <p id="submit_annoucement" style="margin-left: 30px;">Hello</p>
+    
     <!-- <h2 style="margin-left: 80px;">CSV files content</h2>
     <div style="display: flex; align-items: center;">
         <div style="display: flex; flex-direction: column; margin-left: 20px;">
