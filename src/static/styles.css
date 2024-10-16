@@ -65,3 +65,29 @@
 .selected-image {
     border: 2px solid red;
 }
+
+.selected-submit-image {
+    border: 3px solid blue;
+}
+
+#background-overlay {
+    display: none; /* Ẩn mặc định */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Ảnh phóng to trong overlay */
+#background-overlay img {
+    max-width: 90vw;
+    max-height: 90vh;
+    transform: scale(2);
+    cursor: zoom-out;
+    transition: transform 0.3s ease;
+}
