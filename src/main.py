@@ -1,5 +1,6 @@
 from login import getSessionID, getEvaluationID
 import getpass
+from rapidfuzz import fuzz
 
 username = input("Enter your username: ")
 password = getpass.getpass("Enter your password: ")
@@ -263,26 +264,40 @@ def searchByOCR(words = "", k = 200):
     words = data.get('words')
     k = data.get('k')
 
-    print(words)
-
     words = words.split(', ')
-    words = [utils.remove_diacritics_and_lowercase(word) for word in words]
+    words = [utils.remove_diacritics_and_lowercase(word).replace(" ", "") for word in words]
+
+    results = []
+    video_ocr_dict = dataset_manager.get_video_ocr_dict()
+    for video_name, words_list in video_ocr_dict.items():
+        for i in range(0, len(words_list)):
+            score = -1
+            for word in words:
+                for w in words_list[i]:
+                    w.replace(" ", "")
+                    score = max(score, utils.similarity_score_two_words(word, w))
+
+            results.append((video_name, i, score))
+    results.sort(key=lambda item: item[2], reverse=True)
 
     submission_list = []
-
     dataset = dataset_manager.get_dataset()
-    video_ocr_dict = dataset_manager.get_video_ocr_dict()
     video_youtube_link_dict = dataset_manager.get_video_youtube_link_dict()
     video_fps_dict = dataset_manager.get_video_fps_dict()
-    for video_name, words_list in video_ocr_dict.items():
-        x = [video_name, video_youtube_link_dict[video_name], [], video_fps_dict[video_name], ""]
-        for i in range(0, len(words_list)):
-            for word in words:
-                if (word in words_list[i]):
-                    img = (dataset[video_name][i]['filepath'], dataset[video_name][i]['frame_id'])
-                    x[2].append(img)
+    video_transcript_dict = dataset_manager.get_video_transcript_dict()
+    visited = [False] * k
+    for i in range(0, k):
+        if (not visited[i]):
+            visited[i] = True
+            video_name = results[i][0]
+            transcript = utils.concatenate_surrounding_strings(video_transcript_dict[video_name], dataset[video_name][results[i][1]]['frame_id'], video_fps_dict[video_name])
+            x = [video_name, video_youtube_link_dict[video_name], [(dataset[video_name][results[i][1]]['filepath'], dataset[video_name][results[i][1]]['frame_id'])], video_fps_dict[video_name], transcript]
+            for j in range(i + 1, k):
+                if (not visited[j] and video_name == results[j][0] and abs(results[i][1] - results[j][1]) < 12):
+                    x[2].append((dataset[video_name][results[j][1]]['filepath'], dataset[video_name][results[j][1]]['frame_id']))
+                    visited[j] = True
 
-        if len(x[2]) != 0:
+            x[2] = sorted(x[2], key=lambda a:a[1])
             submission_list.append(x)
 
     return submission_list

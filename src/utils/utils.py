@@ -1,5 +1,6 @@
 import unicodedata
 import re
+from rapidfuzz import fuzz, process
 
 def time_difference(start: str, end: str) -> int:
     def convert_to_seconds(time_str: str) -> int:
@@ -88,3 +89,40 @@ def remove_diacritics_and_lowercase(word):
     
     return without_diacritics.lower()
 
+def is_substring_in_set(word, words_set):
+    for w in words_set:
+        if word in w:
+            return True
+    return False
+
+def is_similar_rapidfuzz(word, word_set, threshold=80):    
+    for w in word_set:        
+        # Kiểm tra nếu 'word' là substring của 'w' hoặc 'w' là substring của 'word'
+        if word in w:
+            return True
+        
+        score = fuzz.token_sort_ratio(word, w)
+        if score >= threshold:
+            return True
+    
+    return False
+
+
+def is_similar_two_words(a, b, threshold=75):
+    a_lower = a.lower().replace(" ", "")
+    b_lower = b.lower().replace(" ", "")
+    
+    if a_lower in b_lower:
+        return True
+    
+    similarity_score = fuzz.token_sort_ratio(a_lower, b_lower)
+    
+    if similarity_score >= threshold:
+        return True
+    
+    return False
+
+def similarity_score_two_words(a, b):
+    if a in b:
+        return 100
+    return fuzz.token_sort_ratio(a, b)
