@@ -7,6 +7,7 @@ function performTASKformerSearch() {
     const discardedVideos = document.getElementById('discarded_videos').value;
     const keywords = document.getElementById('keywords').value;
     const k = document.getElementById('k').value;
+    const searchBtn = document.getElementById("searchBtn3"); 
     let value;
     if (k !== '' && !isNaN(k)) {
         value = parseInt(k, 10);
@@ -17,6 +18,10 @@ function performTASKformerSearch() {
     else {
         value = 100;
     }
+
+    searchBtn.disabled = true;
+    searchBtn.style.cursor = "not-allowed";
+    searchBtn.style.opacity = "0.6"; 
 
     // Show loading state if needed
     translatedText.innerText = "Processing search by text and sketch...";
@@ -147,6 +152,10 @@ function performTASKformerSearch() {
             searchResultContainer.appendChild(videoSection);
         });
 
+        searchBtn.disabled = false;
+        searchBtn.style.cursor = "pointer";
+        searchBtn.style.opacity = "1";
+
         // Save temporal search data to localStorage
         const temporalSearchData = {
             textFirstThis: textFirstThis,
@@ -160,6 +169,10 @@ function performTASKformerSearch() {
     .catch(error => {
         console.error('Error:', error);
         translatedFirstThisElement.innerText = "An error occurred during temporal search.";
+
+        searchBtn.disabled = false;
+        searchBtn.style.cursor = "pointer";
+        searchBtn.style.opacity = "1";
     });
 }
 

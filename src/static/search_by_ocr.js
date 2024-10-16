@@ -2,6 +2,7 @@
 function searchByOCR() {
     const words = document.getElementById('ocr').value;
     const k = document.getElementById('k').value;
+    const searchBtn = document.getElementById("searchBtn5"); 
     let value;
     if (k !== '' && !isNaN(k)) {
         value = parseInt(k, 10);
@@ -9,6 +10,10 @@ function searchByOCR() {
     else {
         value = 100;
     }
+
+    searchBtn.disabled = true;
+    searchBtn.style.cursor = "not-allowed";
+    searchBtn.style.opacity = "0.6"; 
 
     fetch('/search_by_ocr', {
         method: 'POST',
@@ -127,8 +132,16 @@ function searchByOCR() {
             searchResultContainer.appendChild(transcriptText);
             searchResultContainer.appendChild(videoSection);
         });
+
+        searchBtn.disabled = false;
+        searchBtn.style.cursor = "pointer";
+        searchBtn.style.opacity = "1";
     })
     .catch(error => {
         console.error('Error:', error);
+
+        searchBtn.disabled = false;
+        searchBtn.style.cursor = "pointer";
+        searchBtn.style.opacity = "1";
     });
 }

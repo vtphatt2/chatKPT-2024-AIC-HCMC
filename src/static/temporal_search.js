@@ -6,6 +6,7 @@ function performTemporalSearch() {
     const translatedFirstThisElement = document.getElementById("translated_text_for_temporal_search");
     const discardedVideos = document.getElementById('discarded_videos').value;
     const keywords = document.getElementById('keywords').value;
+    const searchBtn = document.getElementById("searchBtn2"); 
     const k = document.getElementById('k').value;
     let value;
     if (k !== '' && !isNaN(k)) {
@@ -17,6 +18,10 @@ function performTemporalSearch() {
     else {
         value = 100;
     }
+
+    searchBtn.disabled = true;
+    searchBtn.style.cursor = "not-allowed";
+    searchBtn.style.opacity = "0.6"; 
 
     // Show loading state if needed
     translatedFirstThisElement.innerText = "Processing temporal search...";
@@ -113,6 +118,10 @@ function performTemporalSearch() {
             searchResultContainer.appendChild(videoSection);
         });
 
+        searchBtn.disabled = false;
+        searchBtn.style.cursor = "pointer";
+        searchBtn.style.opacity = "1";
+
         // Save temporal search data to localStorage
         const temporalSearchData = {
             textFirstThis: textFirstThis,
@@ -126,6 +135,10 @@ function performTemporalSearch() {
     .catch(error => {
         console.error('Error:', error);
         translatedFirstThisElement.innerText = "An error occurred during temporal search.";
+
+        searchBtn.disabled = false;
+        searchBtn.style.cursor = "pointer";
+        searchBtn.style.opacity = "1";
     });
 }
 

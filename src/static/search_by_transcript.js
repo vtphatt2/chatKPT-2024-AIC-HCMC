@@ -2,6 +2,7 @@
 function searchByTranscript() {
     const keywords = document.getElementById('keywords').value;
     const k = document.getElementById('k').value;
+    const searchBtn = document.getElementById("searchBtn4"); 
     let value;
     if (k !== '' && !isNaN(k)) {
         value = parseInt(k, 10);
@@ -9,6 +10,10 @@ function searchByTranscript() {
     else {
         value = 100;
     }
+
+    searchBtn.disabled = true;
+    searchBtn.style.cursor = "not-allowed";
+    searchBtn.style.opacity = "0.6"; 
 
     fetch('/search_by_transcript', {
         method: 'POST',
@@ -128,9 +133,17 @@ function searchByTranscript() {
             searchResultContainer.appendChild(videoSection);
         });
 
+        searchBtn.disabled = false;
+        searchBtn.style.cursor = "pointer";
+        searchBtn.style.opacity = "1";
+
     })
     .catch(error => {
         console.error('Error:', error);
         translatedFirstThisElement.innerText = "An error occurred during temporal search.";
+
+        searchBtn.disabled = false;
+        searchBtn.style.cursor = "pointer";
+        searchBtn.style.opacity = "1";
     });
 }
