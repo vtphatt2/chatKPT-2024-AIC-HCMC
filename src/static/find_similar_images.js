@@ -11,10 +11,9 @@ function findSimilarImages() {
         value = parseInt(k, 10);
     }
 
-    // Vô hiệu hóa nút Search
-    // searchBtn.disabled = true;
-    // searchBtn.style.cursor = "not-allowed";
-    // searchBtn.style.opacity = "0.6"; // Thay đổi độ mờ để thể hiện nút đã bị vô hiệu hóa
+    searchBtn.disabled = true;
+    searchBtn.style.cursor = "not-allowed";
+    searchBtn.style.opacity = "0.6"; // Thay đổi độ mờ để thể hiện nút đã bị vô hiệu hóa
 
     const selectedImagesList = [];
 
@@ -176,10 +175,6 @@ function findSimilarImages() {
     })
     .catch(error => {
         console.error('Error:', error);
-        translatedTextElement.innerText = "An error occurred while translating the text."; 
-        if (loadingSpinner) {
-            loadingSpinner.style.display = "none"; 
-        }
 
         searchBtn.disabled = false;
         searchBtn.style.cursor = "pointer";
