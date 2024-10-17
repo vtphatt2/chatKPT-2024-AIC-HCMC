@@ -25,6 +25,7 @@ import numpy as np
 import base64
 from io import BytesIO
 from PIL import Image
+import re
 
 SUBMISSION_FOLDER = os.path.join("..", "submission")
 
@@ -398,7 +399,8 @@ def find_similar_images():
     video_clip14_embedding_dict =  dataset_manager.get_video_clip14_embedding_dict()
     representative_score = np.zeros(768, dtype=np.float32)
     for item in selectedImagesList:
-        video_name = item.get('video_name').rsplit(os.sep, 2)[-2]
+        video_name = re.search(r'L\d+_V\d+', item.get('video_name')).group() if re.search(r'L\d+_V\d+', item.get('video_name')) else None     
+        # video_name = item.get('video_name').rsplit(os.sep, 2)[-2]
         frame_id = int(item.get('frame_id'))
         index = 0
         while (index < len(dataset[video_name]) and dataset[video_name][index]['frame_id'] != frame_id):
