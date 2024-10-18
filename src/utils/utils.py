@@ -57,6 +57,21 @@ def concatenate_surrounding_strings(tuples_list, frame_id, fps):
     
     return ' '.join(strings_to_concatenate)
 
+def concatenate_surrounding_strings_special(tuples_list, frame_id, fps):
+    closest_index = find_closest_tuple_index(tuples_list, frame_id, fps)
+    
+    if closest_index is None:
+        return ''
+    
+    # Get indices for concatenation
+    start_index = max(0, closest_index - 2)
+    end_index = min(len(tuples_list), closest_index + 3) 
+    
+    # Extract the strings to concatenate
+    strings_to_concatenate = [tup[1] for tup in tuples_list[start_index:end_index]]
+    
+    return ' '.join(strings_to_concatenate)
+
 def normalize_text(text):
     text = unicodedata.normalize('NFD', text)
     text = ''.join([char for char in text if not unicodedata.combining(char)])

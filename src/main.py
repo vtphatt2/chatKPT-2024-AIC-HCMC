@@ -69,10 +69,6 @@ def searchByText(text_query, k = 100, discarded_videos = "", keywords = ""):
             score = np.dot(text_embedding, embeddings_array[i])
             results.append((video_name, i, score))
 
-        # sim_scores = cosine_similarity(text_embedding, embeddings_array).flatten()
-        # for index, score in enumerate(sim_scores):
-        #     results.append((video_name, index, score))
-
     results.sort(key=lambda item: item[2], reverse=True)
 
     video_youtube_link_dict = dataset_manager.get_video_youtube_link_dict()
@@ -101,7 +97,7 @@ def searchByText(text_query, k = 100, discarded_videos = "", keywords = ""):
                     right = max(right, results[j][1])
                     visited[j] = True
             
-            if (len(x[2]) < 5) :
+            if (len(x[2]) < 6) :
                 low = max(0, left - 2)
                 high = min(right + 3, len(dataset[video_name]))
                 for i in range(low, left):
@@ -448,6 +444,22 @@ def find_similar_images():
     video_youtube_link_dict = dataset_manager.get_video_youtube_link_dict()
     video_fps_dict = dataset_manager.get_video_fps_dict()
     video_transcript_dict = dataset_manager.get_video_transcript_dict()
+
+    item = selectedImagesList[0]
+    video_name = re.search(r'L\d+_V\d+', item.get('video_name')).group() if re.search(r'L\d+_V\d+', item.get('video_name')) else None  
+    frame_id = int(item.get('frame_id'))
+    index = 0
+    while (index < len(dataset[video_name]) and dataset[video_name][index]['frame_id'] != frame_id):
+        index += 1
+    transcript = utils.concatenate_surrounding_strings_special(video_transcript_dict[video_name], dataset[video_name][index]['frame_id'], video_fps_dict[video_name])
+    index = max(0, index - 10)
+    n = min(len(dataset[video_name]), index + 21)
+    x = [video_name, video_youtube_link_dict[video_name], [], video_fps_dict[video_name], transcript]
+    while (index < n):
+        x[2].append((dataset[video_name][index]['filepath'], dataset[video_name][index]['frame_id']))
+        index += 1
+    submission_list.append(x)
+
     visited = [False] * k
     for i in range(0, k):
         if (not visited[i]):
