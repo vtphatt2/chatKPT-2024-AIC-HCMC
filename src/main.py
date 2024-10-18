@@ -52,7 +52,7 @@ translator = GoogleTranslator(source='vi', target='en')
 print("[4] Load functions")
 def searchByText(text_query, k = 100, discarded_videos = "", keywords = ""):
     submission_list = []
-    text_embedding = [model_clip14.inference(text_query)]
+    text_embedding = model_clip14.inference(text_query)
 
     discarded_set = set(video.strip() for video in discarded_videos.split(','))
     keywords_list = []
@@ -65,9 +65,13 @@ def searchByText(text_query, k = 100, discarded_videos = "", keywords = ""):
         if (video_name in discarded_set):
             continue
         
-        sim_scores = cosine_similarity(text_embedding, embeddings_array).flatten()
-        for index, score in enumerate(sim_scores):
-            results.append((video_name, index, score))
+        for i in range(0, len(embeddings_array)):
+            score = np.dot(text_embedding, embeddings_array[i])
+            results.append((video_name, i, score))
+
+        # sim_scores = cosine_similarity(text_embedding, embeddings_array).flatten()
+        # for index, score in enumerate(sim_scores):
+        #     results.append((video_name, index, score))
 
     results.sort(key=lambda item: item[2], reverse=True)
 
