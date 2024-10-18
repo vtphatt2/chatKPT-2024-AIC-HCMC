@@ -57,7 +57,7 @@ def searchByText(text_query, k = 100, discarded_videos = "", keywords = ""):
     discarded_set = set(video.strip() for video in discarded_videos.split(','))
     keywords_list = []
     if (keywords != ""):
-        keywords_list = keywords.split(',')
+        keywords_list = keywords.split(', ')
 
     dataset = dataset_manager.get_dataset()
     results = []
