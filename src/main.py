@@ -84,9 +84,10 @@ def searchByText(text_query, k = 100, discarded_videos = "", keywords = ""):
             
             transcript = utils.concatenate_surrounding_strings(video_transcript_dict[video_name], dataset[video_name][results[i][1]]['frame_id'], video_fps_dict[video_name])
             if (len(keywords_list) != 0):
-                keywords_cnt = utils.count_substrings(transcript, keywords_list)
-                if (keywords_cnt == 0):
+                if not utils.contains_keyword_fuzzy(transcript, keywords_list, threshold=85):
                     continue
+
+                transcript = utils.highlight_keywords(transcript, keywords_list)
 
             x = [video_name, video_youtube_link_dict[video_name], [(dataset[video_name][results[i][1]]['filepath'], dataset[video_name][results[i][1]]['frame_id'])], video_fps_dict[video_name], transcript]
 

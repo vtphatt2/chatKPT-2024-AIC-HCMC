@@ -141,3 +141,43 @@ def similarity_score_two_words(a, b):
     if a in b:
         return 100
     return fuzz.token_sort_ratio(a, b)
+
+def remove_accents(text):
+    # Loại bỏ dấu khỏi chuỗi
+    nfkd_form = unicodedata.normalize('NFKD', text)
+    return ''.join([char for char in nfkd_form if not unicodedata.combining(char)])
+
+def highlight_keywords(transcript, keywords_list):
+    for keyword in keywords_list:
+        # Loại bỏ dấu khỏi từ khóa và transcript để so sánh
+        keyword_no_accents = remove_accents(keyword).lower()
+        transcript_no_accents = remove_accents(transcript).lower()
+
+        # Tìm vị trí của từ khóa trong transcript (không dấu)
+        start = transcript_no_accents.find(keyword_no_accents)
+        if start != -1:
+            # Lấy phần từ khóa có dấu trong văn bản gốc
+            original_keyword = transcript[start:start + len(keyword)]
+
+            # Thay thế từ khóa bằng phiên bản in đậm và màu đỏ
+            highlighted = f'<strong style="color: red;">{original_keyword}</strong>'
+            transcript = transcript.replace(original_keyword, highlighted)
+    
+    return transcript
+
+def remove_accents(text):
+    """Remove accents from the input string."""
+    nfkd_form = unicodedata.normalize('NFKD', text)
+    return ''.join([c for c in nfkd_form if not unicodedata.combining(c)])
+
+def contains_keyword_fuzzy(s, keyword_list, threshold=85):
+    """Check if any keyword matches approximately in the string `s`."""
+    s_no_accents = remove_accents(s).lower()
+
+    for keyword in keyword_list:
+        keyword_no_accents = remove_accents(keyword).lower()
+        score = fuzz.partial_ratio(keyword_no_accents, s_no_accents)
+        
+        if score >= threshold:
+            return True  # If a match with enough similarity is found
+    return False

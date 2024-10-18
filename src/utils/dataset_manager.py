@@ -20,8 +20,8 @@ class Dataset:
             with open(os.path.join(data_dir, 'video_fps.json'), 'r') as json_file:
                 self.video_fps_dict = json.load(json_file)
 
-        # for batch in ['batch1', 'batch2', 'batch3']:
-        for batch in ['batch1']:
+        for batch in ['batch1', 'batch2', 'batch3']:
+        # for batch in ['batch1']:
             clip14_paths = glob(os.path.join(data_dir, batch, 'clip-features-14', '*.npy'))
             clip14_paths.sort()
 

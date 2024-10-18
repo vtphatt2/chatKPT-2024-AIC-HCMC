@@ -124,7 +124,7 @@ function searchByText() {
             // Loop through each [videoName, images] pair and dynamically create the scrollable image list
             submissionList.forEach(([videoName, video_link, images, fps, transcript], groupIndex) => {
                 const transcriptText = document.createElement('p');
-                transcriptText.innerText = transcript;
+                transcriptText.innerHTML = transcript;
                 transcriptText.style.marginTop = '-5px';
                 transcriptText.style.marginBottom = '-5px';
                 transcriptText.style.fontSize = '12px';
