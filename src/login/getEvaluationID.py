@@ -11,10 +11,10 @@ def get_evaluation_id(session_id):
         response.raise_for_status()  # Check if the request was successful
         evaluations = response.json()
 
-        # Loop through the evaluations and print their details
-        for evaluation in evaluations:
-            evaluation_id = evaluation.get("id")
-            print(f"Evaluation ID: {evaluation_id}")
+        # # Loop through the evaluations and print their details
+        # for evaluation in evaluations:
+        #     evaluation_id = evaluation.get("id")
+        #     print(f"Evaluation ID: {evaluation_id}")
 
         # If you want to return the first evaluation ID for further use
         if evaluations:

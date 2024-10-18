@@ -2,14 +2,14 @@ from login import getSessionID, getEvaluationID
 import getpass
 from rapidfuzz import fuzz
 
-username = input("Enter your username: ")
-password = getpass.getpass("Enter your password: ")
+username = input("Username: ")
+password = getpass.getpass("Password: ")
 session_id = getSessionID.get_session_id(username, password)
 if session_id:
-    print(f"Login successful! Your session ID is: {session_id}")
+    print(f"Login successful!")
     evaluation_id = getEvaluationID.get_evaluation_id(session_id)
     if evaluation_id:
-        print(f"First evaluation ID: {evaluation_id}")
+        print(f"Evaluation ID: {evaluation_id}")
 else:
     print("Failed to retrieve the session ID.")
 
@@ -126,6 +126,27 @@ def temporalSearch(text_first_this, text_then_that, k = 100, range_size = 8, dis
         if (video_name in discarded_set):
             continue
 
+        # num_vectors = len(embeddings_array)
+        # sub_size = int(0.65 * range_size + 1)
+        # window1 = np.sum(embeddings_array[0:sub_size], axis=0)
+        # window2 = np.sum(embeddings_array[(range_size - sub_size):range_size], axis=0)
+        # x_cos_sim = cosine_similarity([x], [window1])[0][0]
+        # y_cos_sim = cosine_similarity([y], [window2])[0][0]
+        # index = 0
+        # j = range_size
+        # results.append((x_cos_sim * y_cos_sim, video_name, index))
+        # while j < num_vectors - 1:
+        #     index += 1
+        #     j += 1
+
+        #     x_cos_sim -= cosine_similarity([x], [embeddings_array[index - 1]])[0][0]
+        #     x_cos_sim += cosine_similarity([x], [embeddings_array[index + sub_size]])[0][0]
+
+        #     y_cos_sim -= cosine_similarity([y], [embeddings_array[j - sub_size]])[0][0]
+        #     y_cos_sim += cosine_similarity([y], [embeddings_array[j]])[0][0]
+
+        #     results.append((x_cos_sim * y_cos_sim, video_name, index))
+
         num_vectors = len(embeddings_array)
         prefix_sum_embedding = [embeddings_array[0]]
         for i in range(1, num_vectors):
@@ -134,7 +155,7 @@ def temporalSearch(text_first_this, text_then_that, k = 100, range_size = 8, dis
         for i in range(0, num_vectors - range_size + 1, int(range_size / 2)):
             x_cos_sim = cosine_similarity([x], [prefix_sum_embedding[i + int(0.65 * range_size)] - prefix_sum_embedding[i]])[0]
             y_cos_sim = cosine_similarity([y], [prefix_sum_embedding[i + range_size - 1] - prefix_sum_embedding[i + int(0.35 * range_size)]])[0]
-            results.append((x_cos_sim * y_cos_sim, video_name, i))
+            results.append((x_cos_sim + y_cos_sim, video_name, i))
 
         # for i in range(0, num_vectors - range_size + 1, int(range_size / 2)):
         #     block = embeddings_array[i:i+range_size]
@@ -157,14 +178,18 @@ def temporalSearch(text_first_this, text_then_that, k = 100, range_size = 8, dis
     video_fps_dict = dataset_manager.get_video_fps_dict()
     video_transcript_dict = dataset_manager.get_video_transcript_dict()
     dataset = dataset_manager.get_dataset()
+    existed_video = set()
     for similarity, video_name, best_index in top_results:
         transcript = utils.concatenate_surrounding_strings(video_transcript_dict[video_name], dataset[video_name][best_index]['frame_id'], video_fps_dict[video_name])
         if (len(keywords_list) != 0):
             keywords_cnt = utils.count_substrings(transcript, keywords_list)
             if (keywords_cnt == 0):
                 continue
+        if (video_name in existed_video):
+            continue
 
-        x = [video_name, video_youtube_link_dict[video_name], [], video_fps_dict[video_name], transcript]    
+        x = [video_name, video_youtube_link_dict[video_name], [], video_fps_dict[video_name], transcript]  
+        existed_video.add(video_name)  
         for j in range(best_index, best_index + range_size):
             x[2].append((dataset[video_name][j]['filepath'], dataset[video_name][j]['frame_id']))
         submission_list.append(x)
