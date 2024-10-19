@@ -179,5 +179,5 @@ def contains_keyword_fuzzy(s, keyword_list, threshold=85):
         score = fuzz.partial_ratio(keyword_no_accents, s_no_accents)
         
         if score >= threshold:
-            return True  # If a match with enough similarity is found
+            return True 
     return False

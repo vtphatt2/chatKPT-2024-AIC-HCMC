@@ -30,8 +30,8 @@ import re
 SUBMISSION_FOLDER = os.path.join("..", "submission")
 
 print("[2] Load dataset")
-data_dir = os.path.join(os.getcwd(), '..', 'data') # link to 'data' folder, remember to organize as described in Github
-# data_dir = '/Users/VoThinhPhat/Desktop/data'
+# data_dir = os.path.join(os.getcwd(), '..', 'data') # link to 'data' folder, remember to organize as described in Github
+data_dir = '/Users/VoThinhPhat/Desktop/data'
 dataset_manager = dataset_manager.Dataset(data_dir=data_dir)
 
 
@@ -179,18 +179,19 @@ def temporalSearch(text_first_this, text_then_that, k = 100, range_size = 8, dis
     video_fps_dict = dataset_manager.get_video_fps_dict()
     video_transcript_dict = dataset_manager.get_video_transcript_dict()
     dataset = dataset_manager.get_dataset()
-    existed_video = set()
+    # existed_video = set()
     for similarity, video_name, best_index in top_results:
         transcript = utils.concatenate_surrounding_strings(video_transcript_dict[video_name], dataset[video_name][best_index]['frame_id'], video_fps_dict[video_name])
         if (len(keywords_list) != 0):
-            keywords_cnt = utils.count_substrings(transcript, keywords_list)
-            if (keywords_cnt == 0):
+            if not utils.contains_keyword_fuzzy(transcript, keywords_list, threshold=85):
                 continue
-        if (video_name in existed_video):
-            continue
+            transcript = utils.highlight_keywords(transcript, keywords_list)
+
+        # if (video_name in existed_video):
+        #     continue
 
         x = [video_name, video_youtube_link_dict[video_name], [], video_fps_dict[video_name], transcript]  
-        existed_video.add(video_name)  
+        # existed_video.add(video_name)  
         for j in range(best_index, best_index + range_size):
             x[2].append((dataset[video_name][j]['filepath'], dataset[video_name][j]['frame_id']))
         submission_list.append(x)
@@ -231,9 +232,10 @@ def searchByTextAndSketch(text_query, sketch_image, k = 200, discarded_videos = 
 
             transcript = utils.concatenate_surrounding_strings(video_transcript_dict[video_name], dataset[video_name][results[i][1]]['frame_id'], video_fps_dict[video_name])
             if (len(keywords_list) != 0):
-                keywords_cnt = utils.count_substrings(transcript, keywords_list)
-                if (keywords_cnt == 0):
+                if not utils.contains_keyword_fuzzy(transcript, keywords_list, threshold=85):
                     continue
+
+                transcript = utils.highlight_keywords(transcript, keywords_list)
 
             x = [video_name, video_youtube_link_dict[video_name], [(dataset[video_name][results[i][1]]['filepath'], dataset[video_name][results[i][1]]['frame_id'])], video_fps_dict[video_name], transcript]
 
@@ -276,7 +278,8 @@ def searchByTranscript(keywords = "", k = 200,):
     for i in range(0, k):
         video_name = results[i][0]
         target_frame_id = utils.time_to_seconds(video_transcript_dict[video_name][results[i][1]][0]) * video_fps_dict[video_name]
-        x = [video_name, video_youtube_link_dict[video_name], [], video_fps_dict[video_name], results[i][3]]
+        transcript = utils.highlight_keywords(results[i][3], keywords)
+        x = [video_name, video_youtube_link_dict[video_name], [], video_fps_dict[video_name], transcript]
         closest_index = utils.find_closest_frame_index(dataset[video_name], target_frame_id)
 
         for j in range(closest_index, min(closest_index + 15, len(dataset[video_name]))):
