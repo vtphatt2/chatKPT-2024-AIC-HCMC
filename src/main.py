@@ -64,6 +64,18 @@ def searchByText(text_query, k = 100, discarded_videos = "", keywords = ""):
     for video_name, embeddings_array in dataset_manager.get_video_clip14_embedding_dict().items():
         if (video_name in discarded_set):
             continue
+
+        if ("batch 1" in discarded_set):
+            if (int(video_name[1:3]) <= 12):
+                continue
+
+        if ("batch 2" in discarded_set):
+            if (int(video_name[1:3]) <= 24 and int(video_name[1:3]) >= 13):
+                continue
+
+        if ("batch 3" in discarded_set):
+            if (int(video_name[1:3]) >= 25):
+                continue
         
         for i in range(0, len(embeddings_array)):
             score = np.dot(text_embedding, embeddings_array[i])
@@ -126,6 +138,18 @@ def temporalSearch(text_first_this, text_then_that, k = 100, range_size = 8, dis
     for video_name, embeddings_array in dataset_manager.get_video_clip14_embedding_dict().items():
         if (video_name in discarded_set):
             continue
+
+        if ("batch 1" in discarded_set):
+            if (int(video_name[1:3]) <= 12):
+                continue
+
+        if ("batch 2" in discarded_set):
+            if (int(video_name[1:3]) <= 24 and int(video_name[1:3]) >= 13):
+                continue
+
+        if ("batch 3" in discarded_set):
+            if (int(video_name[1:3]) >= 25):
+                continue
 
         # num_vectors = len(embeddings_array)
         # sub_size = int(0.65 * range_size + 1)
@@ -212,6 +236,18 @@ def searchByTextAndSketch(text_query, sketch_image, k = 200, discarded_videos = 
     for video_name, embeddings_array in dataset_manager.get_video_task_former_embedding_dict().items():
         if (video_name in discarded_set):
             continue
+
+        if ("batch 1" in discarded_set):
+            if (int(video_name[1:3]) <= 12):
+                continue
+
+        if ("batch 2" in discarded_set):
+            if (int(video_name[1:3]) <= 24 and int(video_name[1:3]) >= 13):
+                continue
+
+        if ("batch 3" in discarded_set):
+            if (int(video_name[1:3]) >= 25):
+                continue
         
         sim_scores = cosine_similarity(embedding, embeddings_array).flatten()
         for index, score in enumerate(sim_scores):
