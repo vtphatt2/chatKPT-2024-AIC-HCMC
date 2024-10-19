@@ -459,6 +459,8 @@ def find_similar_images():
     data = request.json
     selectedImagesList = data.get('selectedImagesList')
     k = data.get('k')
+    discarded_videos = data.get('discardedVideos')
+    discarded_set = set(video.strip() for video in discarded_videos.split(','))
 
     dataset = dataset_manager.get_dataset()
     video_clip14_embedding_dict =  dataset_manager.get_video_clip14_embedding_dict()
@@ -473,7 +475,19 @@ def find_similar_images():
         representative_score += video_clip14_embedding_dict[video_name][index]
 
     results = []
-    for video_name, embeddings_array in video_clip14_embedding_dict.items():            
+    for video_name, embeddings_array in video_clip14_embedding_dict.items():  
+        if ("batch 1" in discarded_set):
+            if (int(video_name[1:3]) <= 12):
+                continue
+
+        if ("batch 2" in discarded_set):
+            if (int(video_name[1:3]) <= 24 and int(video_name[1:3]) >= 13):
+                continue
+
+        if ("batch 3" in discarded_set):
+            if (int(video_name[1:3]) >= 25):
+                continue
+
         sim_scores = cosine_similarity([representative_score], embeddings_array).flatten()
         for index, score in enumerate(sim_scores):
             results.append((video_name, index, score))

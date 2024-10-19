@@ -35,7 +35,8 @@ function findSimilarImages() {
         },
         body: JSON.stringify({
             selectedImagesList: selectedImagesList,
-            k: value
+            k: value,
+            discardedVideos: discardedVideos
         })
     })
     .then(response => {
@@ -93,6 +94,30 @@ function findSimilarImages() {
             videoLink.style.color = "blue";  // Set text color (you can change it to any color you prefer)
             videoLink.style.display = "block";  // Ensure the link appears beneath the video name
             videoHeader.appendChild(videoLink); 
+
+            const discardButton = document.createElement('button');
+            discardButton.innerText = "Discard";  // Nội dung của nút
+            discardButton.style.marginTop = "10px";  // Thêm khoảng cách giữa link và nút
+            discardButton.style.padding = "5px 10px";  // Tạo khoảng trống trong nút
+            discardButton.style.border = "none";  // Loại bỏ viền nút (tuỳ chọn)
+            discardButton.style.backgroundColor = "#ff4d4d";  // Màu nền đỏ
+            discardButton.style.color = "white";  // Màu chữ trắng
+            discardButton.style.cursor = "pointer";
+            
+            const discardedVideosElement = document.getElementById('discarded_videos');
+            discardButton.addEventListener('click', () => {
+                // Xóa video khỏi giao diện
+                transcriptText.remove();  
+                videoSection.remove();  
+            
+                // Thêm tên video vào danh sách các video bị loại bỏ
+                let discardedVideos = discardedVideosElement.value.split(',').map(v => v.trim()).filter(Boolean); // Chuyển thành mảng và loại bỏ khoảng trắng
+                if (!discardedVideos.includes(videoName)) {  // Kiểm tra nếu video chưa có trong danh sách
+                    discardedVideos.push(videoName);
+                    discardedVideosElement.value = discardedVideos.join(', ');  // Cập nhật giá trị với các tên video được phân cách bởi dấu phẩy
+                }
+            });
+            videoHeader.appendChild(discardButton);
 
             // Create the scrollable container for images (displayed next to the header)
             const scrollContainer = document.createElement('div');
