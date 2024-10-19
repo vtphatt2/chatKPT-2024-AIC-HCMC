@@ -30,8 +30,8 @@ import re
 SUBMISSION_FOLDER = os.path.join("..", "submission")
 
 print("[2] Load dataset")
-# data_dir = os.path.join(os.getcwd(), '..', 'data') # link to 'data' folder, remember to organize as described in Github
-data_dir = '/Users/VoThinhPhat/Desktop/data'
+data_dir = os.path.join(os.getcwd(), '..', 'data') # link to 'data' folder, remember to organize as described in Github
+# data_dir = '/Users/VoThinhPhat/Desktop/data'
 dataset_manager = dataset_manager.Dataset(data_dir=data_dir)
 
 
