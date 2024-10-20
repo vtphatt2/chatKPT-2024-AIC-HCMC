@@ -2,8 +2,8 @@ from login import getSessionID, getEvaluationID
 import getpass
 from rapidfuzz import fuzz
 
-username = input("Username: ")
-password = getpass.getpass("Password: ")
+username = "team22"
+password = "MMxyYefPZk"
 session_id = getSessionID.get_session_id(username, password)
 if session_id:
     print(f"Login successful!")
@@ -507,7 +507,7 @@ def find_similar_images():
         index += 1
     transcript = utils.concatenate_surrounding_strings_special(video_transcript_dict[video_name], dataset[video_name][index]['frame_id'], video_fps_dict[video_name])
     index = max(0, index - 10)
-    n = min(len(dataset[video_name]), index + 21)
+    n = min(len(dataset[video_name]), index + 36)
     x = [video_name, video_youtube_link_dict[video_name], [], video_fps_dict[video_name], transcript]
     while (index < n):
         x[2].append((dataset[video_name][index]['filepath'], dataset[video_name][index]['frame_id']))
